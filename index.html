@@ -282,6 +282,22 @@ body {
 hr { border:none; border-top:1px solid var(--border); margin:30px 0; }
 .ic { background:rgba(0,229,160,.08); color:var(--green); font-family:'JetBrains Mono',monospace; font-size:11px; padding:2px 7px; border-radius:3px; border:1px solid rgba(0,229,160,.15); }
 b { color:var(--text); }
+  /* ── PRINT STYLES ─────────────────────────── */
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { background: #080c14 !important; color: #dce8f5 !important; }
+    .nav, #search-bar, #search-overlay { display: none !important; }
+    .sec { display: block !important; }
+    .sec-title { page-break-before: always; }
+    .sec:first-child .sec-title { page-break-before: avoid; }
+    .card { page-break-inside: avoid; margin-bottom: 16px; }
+    .cb-wrap { page-break-inside: avoid; }
+    .cb-wrap pre { font-size: 10px !important; line-height: 1.5 !important; }
+    .hero { page-break-after: always; }
+    .quiz-opt, #qbox, #qres { display: none !important; }
+    a { color: inherit; text-decoration: none; }
+    .print-hide { display: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -327,6 +343,33 @@ b { color:var(--text); }
     <span class="pill">CRUD</span><span class="pill">OPERADORES</span><span class="pill">PIPELINE</span>
     <span class="pill">$LOOKUP</span><span class="pill">ÍNDICES</span><span class="pill">VALIDATION</span>
     <span class="pill">ARRAYS</span><span class="pill">REGEX</span><span class="pill">FECHAS</span><span class="pill">TRANSACCIONES</span>
+  </div>
+
+  <button onclick="imprimirTodo()" style="
+    margin-top: 28px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, rgba(0,229,160,0.15), rgba(0,229,160,0.05));
+    border: 1px solid rgba(0,229,160,0.4);
+    color: var(--green);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s;
+    text-transform: uppercase;
+    font-weight: 700;
+  "
+  onmouseover="this.style.background='linear-gradient(135deg,rgba(0,229,160,0.28),rgba(0,229,160,0.12))';this.style.boxShadow='0 0 24px rgba(0,229,160,0.2)'"
+  onmouseout="this.style.background='linear-gradient(135deg,rgba(0,229,160,0.15),rgba(0,229,160,0.05))';this.style.boxShadow='none'"
+  >
+    🖨️ &nbsp;Imprimir / Guardar como PDF
+  </button>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);margin-top:8px;letter-spacing:1px">
+    // imprime TODO el contenido — todas las secciones de una vez
   </div>
 </div>
 
@@ -4094,7 +4137,35 @@ function showRes() {
 
 startQuiz();
 
-// ── SEARCH DATABASE ──────────────────────────────────
+// ── IMPRIMIR TODO ─────────────────────────────────────
+function imprimirTodo() {
+  // Mostrar todas las secciones
+  const secs = document.querySelectorAll('.sec');
+  const wasOn = [];
+  secs.forEach((s, i) => {
+    wasOn[i] = s.classList.contains('on');
+    s.classList.add('on');
+  });
+
+  // Ocultar elementos no imprimibles
+  const overlay = document.getElementById('search-overlay');
+  const searchBar = document.getElementById('search-bar');
+  if (overlay) overlay.style.display = 'none';
+
+  // Pequeño delay para que el DOM se actualice, luego imprimir
+  setTimeout(() => {
+    window.print();
+
+    // Restaurar estado original después de imprimir
+    setTimeout(() => {
+      secs.forEach((s, i) => {
+        if (!wasOn[i]) s.classList.remove('on');
+      });
+    }, 500);
+  }, 150);
+}
+
+
 const SEARCH_DB = [
   { term: "$match", desc: "Filtra documentos en el pipeline. Equivale a WHERE en SQL. Siempre ponlo al inicio para optimizar.", section: "stages", nav: "06 · Todos los Stages" },
   { term: "$group", desc: "Agrupa documentos y permite acumuladores: $sum, $avg, $max, $min, $first, $last, $push, $addToSet. El campo _id define el criterio de agrupación.", section: "stages", nav: "06 · Todos los Stages" },
