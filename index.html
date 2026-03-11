@@ -341,11 +341,36 @@ b { color:var(--text); }
   <button class="nb"     onclick="go('lookup',this)">07 · $lookup</button>
   <button class="nb"     onclick="go('exprs',this)">08 · Expresiones</button>
   <button class="nb"     onclick="go('idx',this)">09 · Índices</button>
+  <button class="nb"     onclick="go('indices2',this)">09b · Tipos de Índice</button>
+  <button class="nb"     onclick="go('windowfields',this)">14 · $setWindowFields</button>
+  <button class="nb"     onclick="go('practica',this)">15 · Casos Reales</button>
   <button class="nb"     onclick="go('schema',this)">10 · Schema</button>
   <button class="nb"     onclick="go('misc',this)">11 · Extra</button>
+  <button class="nb"     onclick="go('clase',this)">11b · Clase</button>
   <button class="nb"     onclick="go('ref',this)">12 · Referencia</button>
   <button class="nb"     onclick="go('quiz',this)">13 · Quiz</button>
 </nav>
+
+<!-- SEARCH BAR -->
+<div id="search-overlay" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(5,9,18,0.92);backdrop-filter:blur(8px);padding:60px 20px 20px" onclick="closeSearch(event)">
+  <div style="max-width:680px;margin:0 auto" onclick="event.stopPropagation()">
+    <div style="position:relative;margin-bottom:20px">
+      <input id="search-input" type="text" placeholder="Busca: $addFields, $lookup, índice de texto, $unwind..." oninput="doSearch(this.value)"
+        style="width:100%;background:#0e1625;border:2px solid var(--green);border-radius:10px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--text);outline:none;box-shadow:0 0 30px rgba(0,229,160,0.15)">
+    </div>
+    <div id="search-results" style="max-height:60vh;overflow-y:auto"></div>
+    <div style="text-align:center;margin-top:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim)">ESC o clic fuera para cerrar</div>
+  </div>
+</div>
+
+<div style="background:rgba(8,12,20,0.98);border-bottom:1px solid var(--border);padding:8px 40px;display:flex;gap:12px;align-items:center">
+  <button id="search-btn" onclick="openSearch()" style="display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--border);color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:12px;padding:9px 18px;border-radius:7px;cursor:pointer;transition:all .2s;width:100%;max-width:440px;text-align:left">
+    <span>🔍</span>
+    <span>Buscar operador o concepto...</span>
+    <kbd style="margin-left:auto;background:var(--surf2);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-size:10px;color:var(--dim)">Ctrl+K</kbd>
+  </button>
+  <span style="color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:11px;white-space:nowrap">// Apuntes Juan José Pantoja</span>
+</div>
 
 <div class="wrap">
 
@@ -2085,6 +2110,137 @@ b { color:var(--text); }
   </div>
 </div>
 
+  <div class="card c-orange">
+    <div class="card-title">📖 Tipos de índice — Explicación completa</div>
+    <div class="card-sub">MongoDB tiene 5 tipos principales de índice. Cada uno sirve para un caso de uso diferente.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+      <div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-family:'JetBrains Mono',monospace;color:var(--green);font-size:11px;font-weight:700;margin-bottom:8px">1. ÍNDICE DE TEXTO</div>
+        <div style="color:var(--dim);font-size:13px;line-height:1.6">Permite hacer búsquedas de palabras dentro de campos string. Ignora mayúsculas/minúsculas y palabras comunes ("el", "la", "de"). Ideal para buscadores. Solo puede haber <b style="color:var(--text)">uno por colección</b>, pero puede cubrir varios campos.</div>
+      </div>
+      <div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-family:'JetBrains Mono',monospace;color:var(--blue);font-size:11px;font-weight:700;margin-bottom:8px">2. ÍNDICE DE ARREGLOS (Multikey)</div>
+        <div style="color:var(--dim);font-size:13px;line-height:1.6">Se crea automáticamente cuando indexas un campo que contiene un array. MongoDB indexa <b style="color:var(--text)">cada elemento del array</b> por separado, así puedes buscar por cualquier elemento eficientemente.</div>
+      </div>
+      <div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-family:'JetBrains Mono',monospace;color:var(--yellow);font-size:11px;font-weight:700;margin-bottom:8px">3. UNIQUE INDEX</div>
+        <div style="color:var(--dim);font-size:13px;line-height:1.6">Garantiza que ningún documento repita el mismo valor en ese campo. Si intentas insertar un duplicado, MongoDB lanza un error. Útil para emails, cédulas, ISBN, usernames.</div>
+      </div>
+      <div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-family:'JetBrains Mono',monospace;color:var(--orange);font-size:11px;font-weight:700;margin-bottom:8px">4. ÍNDICE DE RANGO</div>
+        <div style="color:var(--dim);font-size:13px;line-height:1.6">Es el índice estándar (el que más usas). Ordena los valores en un B-Tree, lo que hace muy eficientes las consultas con <span class="ic">$gt</span>, <span class="ic">$lt</span>, <span class="ic">$between</span>, rangos de fechas, etc.</div>
+      </div>
+      <div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:16px;grid-column:span 2">
+        <div style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;font-weight:700;margin-bottom:8px">5. ÍNDICE GEOESPACIAL</div>
+        <div style="color:var(--dim);font-size:13px;line-height:1.6">Para datos de ubicación (latitud/longitud). <b style="color:var(--text)">2dsphere</b> funciona con la curvatura de la Tierra (para coordenadas reales). <b style="color:var(--text)">2d</b> para planos cartesianos (mapas planos, videojuegos). Permite consultas como "restaurantes a menos de 2km de aquí".</div>
+      </div>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell — los 5 tipos</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// ─── 1. ÍNDICE DE TEXTO ───────────────────────────────────</span>
+<span class="cm">// Busca palabras dentro de strings. Solo 1 por colección.</span>
+<span class="fn">db</span>.libros.createIndex(
+  { titulo: <span class="s">"text"</span>, descripcion: <span class="s">"text"</span> }
+)
+<span class="cm">// Uso: buscar la palabra "soledad" en título o descripción</span>
+<span class="fn">db</span>.libros.find({ <span class="op">$text</span>: { <span class="op">$search</span>: <span class="s">"soledad"</span> } })
+<span class="cm">// Excluir palabra:</span>
+<span class="fn">db</span>.libros.find({ <span class="op">$text</span>: { <span class="op">$search</span>: <span class="s">"novela -romance"</span> } })
+<span class="cm">// Con relevancia (score):</span>
+<span class="fn">db</span>.libros.find(
+  { <span class="op">$text</span>: { <span class="op">$search</span>: <span class="s">"cien años"</span> } },
+  { score: { <span class="op">$meta</span>: <span class="s">"textScore"</span> } }
+).sort({ score: { <span class="op">$meta</span>: <span class="s">"textScore"</span> } })
+
+
+<span class="cm">// ─── 2. ÍNDICE DE ARREGLOS (Multikey) ────────────────────</span>
+<span class="cm">// Se crea igual que un índice normal sobre un campo array.</span>
+<span class="cm">// MongoDB automáticamente indexa CADA elemento del array.</span>
+<span class="fn">db</span>.libros.createIndex({ autores: <span class="n">1</span> })
+<span class="cm">// Uso: buscar libros de un autor específico dentro del array</span>
+<span class="fn">db</span>.libros.find({ autores: ObjectId(<span class="s">"698cc2010d7212fce1af8a03"</span>) })
+<span class="cm">// También funciona con $in sobre arrays:</span>
+<span class="fn">db</span>.libros.find({ tags: { <span class="op">$in</span>: [<span class="s">"ciencia"</span>, <span class="s">"ficcion"</span>] } })
+<span class="cm">// NOTA: no se pueden combinar dos campos multikey en un índice compuesto</span>
+
+
+<span class="cm">// ─── 3. UNIQUE INDEX ──────────────────────────────────────</span>
+<span class="cm">// No permite valores repetidos en ese campo.</span>
+<span class="fn">db</span>.clientes.createIndex(
+  { email: <span class="n">1</span> },
+  { unique: <span class="b">true</span> }
+)
+<span class="cm">// Insertar email duplicado → lanza error E11000 duplicate key</span>
+<span class="cm">// Índice único compuesto (la COMBINACIÓN debe ser única):</span>
+<span class="fn">db</span>.productos.createIndex(
+  { nombre: <span class="n">1</span>, categoria: <span class="n">1</span> },
+  { unique: <span class="b">true</span> }
+)
+<span class="cm">// Unique + sparse: permite múltiples null (no los considera duplicados)</span>
+<span class="fn">db</span>.clientes.createIndex(
+  { telefono: <span class="n">1</span> },
+  { unique: <span class="b">true</span>, sparse: <span class="b">true</span> }
+)
+
+
+<span class="cm">// ─── 4. ÍNDICE DE RANGO ───────────────────────────────────</span>
+<span class="cm">// El índice estándar. Perfecto para $gt, $lt, $gte, $lte, rangos.</span>
+<span class="fn">db</span>.productos.createIndex({ precio: <span class="n">1</span> })
+<span class="cm">// Uso con rango de precios:</span>
+<span class="fn">db</span>.productos.find({ precio: { <span class="op">$gte</span>: <span class="n">100</span>, <span class="op">$lte</span>: <span class="n">500</span> } })
+<span class="cm">// Índice de rango en fechas (muy común):</span>
+<span class="fn">db</span>.prestamos.createIndex({ fecha_prestamo: <span class="n">1</span> })
+<span class="fn">db</span>.prestamos.find({
+  fecha_prestamo: {
+    <span class="op">$gte</span>: <span class="fn">ISODate</span>(<span class="s">"2024-01-01"</span>),
+    <span class="op">$lte</span>: <span class="fn">ISODate</span>(<span class="s">"2024-12-31"</span>)
+  }
+})
+
+
+<span class="cm">// ─── 5. ÍNDICE GEOESPACIAL ────────────────────────────────</span>
+<span class="cm">// Para ubicaciones. Los documentos deben tener formato GeoJSON.</span>
+<span class="cm">// Insertar un lugar con coordenadas:</span>
+<span class="fn">db</span>.lugares.insertOne({
+  nombre: <span class="s">"Biblioteca Central"</span>,
+  ubicacion: {
+    type: <span class="s">"Point"</span>,
+    coordinates: [<span class="op">-75.5636</span>, <span class="n">6.2518</span>]   <span class="cm">// [longitud, latitud]</span>
+  }
+})
+<span class="cm">// Crear el índice 2dsphere:</span>
+<span class="fn">db</span>.lugares.createIndex({ ubicacion: <span class="s">"2dsphere"</span> })
+
+<span class="cm">// Buscar lugares a menos de 2km (2000 metros):</span>
+<span class="fn">db</span>.lugares.find({
+  ubicacion: {
+    <span class="op">$near</span>: {
+      <span class="op">$geometry</span>: {
+        type: <span class="s">"Point"</span>,
+        coordinates: [<span class="op">-75.5636</span>, <span class="n">6.2518</span>]
+      },
+      <span class="op">$maxDistance</span>: <span class="n">2000</span>   <span class="cm">// metros</span>
+    }
+  }
+})
+
+<span class="cm">// Buscar dentro de un área (polígono):</span>
+<span class="fn">db</span>.lugares.find({
+  ubicacion: {
+    <span class="op">$geoWithin</span>: {
+      <span class="op">$centerSphere</span>: [
+        [<span class="op">-75.5636</span>, <span class="n">6.2518</span>],   <span class="cm">// centro [lon, lat]</span>
+        <span class="n">5</span> / <span class="n">3963.2</span>             <span class="cm">// radio en radianes (5 millas)</span>
+      ]
+    }
+  }
+})</pre>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════════ 10 SCHEMA ════════════════════ -->
 <div id="sec-schema" class="sec">
   <div class="sec-label">10 — Validación</div>
@@ -2335,6 +2491,583 @@ session.startTransaction()
 <span class="fn">db</span>.serverStatus()</pre>
     </div>
   </div>
+
+  <div class="card c-cyan">
+    <div class="card-title">📊 $setWindowFields — Cálculos tipo SQL OVER()</div>
+    <div class="card-sub">Permite calcular ranking, acumulados y comparaciones con el documento anterior/siguiente — sin agrupar ni perder los documentos originales.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// ─── Sintaxis básica ──────────────────────────</span>
+{
+  <span class="op">$setWindowFields</span>: {
+    partitionBy: <span class="s">"$categoria"</span>,  <span class="cm">// como GROUP BY (opcional)</span>
+    sortBy:      { precio: <span class="op">-1</span> }, <span class="cm">// como ORDER BY</span>
+    output: {
+      <span class="cm">// aquí defines los campos calculados</span>
+    }
+  }
+}
+
+<span class="cm">// ─── Ejemplo 1: Ranking de precio por categoría ───────</span>
+<span class="fn">db</span>.productos.aggregate([
+  {
+    <span class="op">$setWindowFields</span>: {
+      partitionBy: <span class="s">"$categoria"</span>,
+      sortBy:      { precio: <span class="op">-1</span> },
+      output: {
+        ranking: {
+          <span class="op">$rank</span>: {}   <span class="cm">// posición dentro de su categoría</span>
+        }
+      }
+    }
+  }
+])
+<span class="cm">// Resultado: cada producto tiene su ranking dentro de su categoría</span>
+
+<span class="cm">// ─── Ejemplo 2: Total acumulado de ventas por fecha ───</span>
+<span class="fn">db</span>.pedidos.aggregate([
+  {
+    <span class="op">$setWindowFields</span>: {
+      partitionBy: <span class="b">null</span>,
+      sortBy: { fecha: <span class="n">1</span> },
+      output: {
+        ventasAcumuladas: {
+          <span class="op">$sum</span>: <span class="s">"$total"</span>,
+          window: {
+            documents: [<span class="s">"unbounded"</span>, <span class="s">"current"</span>]
+            <span class="cm">// desde el inicio hasta el documento actual</span>
+          }
+        }
+      }
+    }
+  }
+])
+
+<span class="cm">// ─── Ejemplo 3: Diferencia con el documento anterior ──</span>
+<span class="fn">db</span>.pedidos.aggregate([
+  { <span class="op">$sort</span>: { fecha: <span class="n">1</span> } },
+  {
+    <span class="op">$setWindowFields</span>: {
+      sortBy: { fecha: <span class="n">1</span> },
+      output: {
+        totalAnterior: {
+          <span class="op">$shift</span>: {
+            output: <span class="s">"$total"</span>,
+            by:     <span class="op">-1</span>,       <span class="cm">// -1 = documento anterior</span>
+            default: <span class="n">0</span>
+          }
+        }
+      }
+    }
+  },
+  {
+    <span class="op">$addFields</span>: {
+      diferencia: { <span class="op">$subtract</span>: [<span class="s">"$total"</span>, <span class="s">"$totalAnterior"</span>] }
+    }
+  }
+])
+
+<span class="cm">// ─── Operadores de window disponibles ─────────────────</span>
+<span class="cm">// $sum, $avg, $min, $max  → igual que en $group</span>
+<span class="cm">// $count                  → cuenta en la ventana</span>
+<span class="cm">// $rank                   → posición (con saltos en empates)</span>
+<span class="cm">// $denseRank              → posición (sin saltos en empates)</span>
+<span class="cm">// $documentNumber         → número de fila secuencial</span>
+<span class="cm">// $shift                  → valor del doc anterior/siguiente</span>
+<span class="cm">// $first / $last          → primer/último en la ventana</span></pre>
+    </div>
+  </div>
+
+  <div class="card c-yellow">
+    <div class="card-title">📅 $addFields con $dateDiff — Diferencia entre fechas</div>
+    <div class="card-sub">Calcula la diferencia entre dos fechas en la unidad que quieras. Muy útil para días de préstamo, antigüedad, etc.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Calcular días entre fecha de préstamo y devolución</span>
+<span class="fn">db</span>.prestamos.aggregate([
+  {
+    <span class="op">$addFields</span>: {
+      dias_prestamo: {
+        <span class="op">$dateDiff</span>: {
+          startDate: <span class="s">"$fecha_prestamo"</span>,
+          endDate:   <span class="s">"$fecha_devolucion"</span>,
+          unit:      <span class="s">"day"</span>
+        }
+      }
+    }
+  }
+])
+<span class="cm">// Unidades válidas: "year", "month", "week", "day", "hour", "minute", "second"</span>
+
+<span class="cm">// Calcular días desde hoy hasta la devolución</span>
+<span class="fn">db</span>.prestamos.aggregate([
+  {
+    <span class="op">$addFields</span>: {
+      dias_restantes: {
+        <span class="op">$dateDiff</span>: {
+          startDate: <span class="s">"$$NOW"</span>,
+          endDate:   <span class="s">"$fecha_devolucion"</span>,
+          unit:      <span class="s">"day"</span>
+        }
+      }
+    }
+  },
+  {
+    <span class="op">$addFields</span>: {
+      estado_devolucion: {
+        <span class="op">$cond</span>: {
+          <span class="k">if</span>:   { <span class="op">$lt</span>: [<span class="s">"$dias_restantes"</span>, <span class="n">0</span>] },
+          <span class="k">then</span>: <span class="s">"VENCIDO"</span>,
+          <span class="k">else</span>: <span class="s">"A tiempo"</span>
+        }
+      }
+    }
+  }
+])</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ 11b EJEMPLOS CLASE ════════════════════ -->
+<div id="sec-clase" class="sec">
+  <div class="sec-label">11b — Ejercicios de Clase</div>
+  <h2 class="sec-title">Consultas reales de clase</h2>
+  <p class="sec-desc">Ejemplos trabajados en clase con la base de datos Biblioteca y Colegio. Úsalos para practicar.</p>
+
+  <div class="alert a-tip">💡 Estas consultas usan las bases de datos <span class="ic">Biblioteca</span> (libros, prestamos, usuarios, detalles_libros) y <span class="ic">Colegio</span> (horarios con arrays de materias por día).</div>
+
+  <div class="card">
+    <div class="card-title">📚 Consultas Biblioteca</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">Libros con más de 300 páginas, español, no novela, ordenado por fecha desc</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.detalles_libros.aggregate([
+  {
+    <span class="op">$match</span>: {
+      numero_paginas: { <span class="op">$gt</span>: <span class="n">300</span> },
+      idioma:  <span class="s">"Español"</span>,
+      genero:  { <span class="op">$ne</span>: <span class="s">"Novela"</span> }
+    }
+  },
+  {
+    <span class="op">$sort</span>: { fecha_publicacion: <span class="op">-1</span> }
+  }
+])</pre>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">Libros que NUNCA fueron prestados</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.libros.aggregate([
+  {
+    <span class="op">$match</span>: {
+      _id: { <span class="op">$nin</span>: <span class="fn">db</span>.prestamos.distinct(<span class="s">"id_libro"</span>) }
+    }
+  },
+  {
+    <span class="op">$group</span>: {
+      _id:               <span class="b">null</span>,
+      LibrosNoPrestados: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  }
+])</pre>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">$lookup: nombre usuario + título libro prestado</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.prestamos.aggregate([
+  {
+    <span class="op">$lookup</span>: {
+      from:         <span class="s">"usuarios"</span>,
+      localField:   <span class="s">"usuario_id"</span>,
+      foreignField: <span class="s">"_id"</span>,
+      as:           <span class="s">"usuario"</span>
+    }
+  },
+  {
+    <span class="op">$lookup</span>: {
+      from:         <span class="s">"libros"</span>,
+      localField:   <span class="s">"id_libro"</span>,
+      foreignField: <span class="s">"_id"</span>,
+      as:           <span class="s">"libro"</span>
+    }
+  },
+  { <span class="op">$unwind</span>: <span class="s">"$usuario"</span> },
+  { <span class="op">$unwind</span>: <span class="s">"$libro"</span> },
+  {
+    <span class="op">$project</span>: {
+      _id:             <span class="n">0</span>,
+      nombre_usuario:  <span class="s">"$usuario.nombre"</span>,
+      titulo_libro:    <span class="s">"$libro.titulo"</span>,
+      fecha_prestamo:  <span class="n">1</span>
+    }
+  }
+])</pre>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">Libros más prestados en 2024</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.prestamos.aggregate([
+  {
+    <span class="op">$match</span>: {
+      fecha_prestamo: {
+        <span class="op">$gte</span>: <span class="fn">ISODate</span>(<span class="s">"2024-01-01"</span>),
+        <span class="op">$lt</span>:  <span class="fn">ISODate</span>(<span class="s">"2025-01-01"</span>)
+      }
+    }
+  },
+  {
+    <span class="op">$group</span>: {
+      _id:          <span class="s">"$id_libro"</span>,
+      numPrestamos: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  { <span class="op">$sort</span>: { numPrestamos: <span class="op">-1</span> } },
+  { <span class="op">$limit</span>: <span class="n">5</span> },
+  {
+    <span class="op">$lookup</span>: {
+      from:         <span class="s">"libros"</span>,
+      localField:   <span class="s">"_id"</span>,
+      foreignField: <span class="s">"_id"</span>,
+      as:           <span class="s">"libro"</span>
+    }
+  },
+  { <span class="op">$unwind</span>: <span class="s">"$libro"</span> },
+  {
+    <span class="op">$project</span>: {
+      titulo:       <span class="s">"$libro.titulo"</span>,
+      numPrestamos: <span class="n">1</span>
+    }
+  }
+])</pre>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">Promedio de páginas por idioma</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.detalles_libros.aggregate([
+  {
+    <span class="op">$group</span>: {
+      _id:                <span class="s">"$idioma"</span>,
+      promedioNroPaginas: { <span class="op">$avg</span>: <span class="s">"$numero_paginas"</span> },
+      maximoNroPaginas:   { <span class="op">$max</span>: <span class="s">"$numero_paginas"</span> },
+      minimoNroPaginas:   { <span class="op">$min</span>: <span class="s">"$numero_paginas"</span> }
+    }
+  },
+  {
+    <span class="op">$project</span>: {
+      idioma:             <span class="s">"$_id"</span>,
+      _id:                <span class="n">0</span>,
+      promedioNroPaginas: { <span class="op">$round</span>: [<span class="s">"$promedioNroPaginas"</span>, <span class="n">0</span>] },
+      maximoNroPaginas:   <span class="n">1</span>,
+      minimoNroPaginas:   <span class="n">1</span>
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-blue">
+    <div class="card-title">🏫 Consultas Colegio (arrays de materias)</div>
+    <div class="card-sub">La colección tiene documentos con campos Lunes, Martes, Miercoles, Jueves, Viernes — cada uno es un array de materias.</div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">P1 — Grado, Lunes y Martes para documentos donde Grado sea "6"</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+  { <span class="op">$match</span>: { Grado: <span class="s">"6"</span> } },
+  {
+    <span class="op">$project</span>: {
+      _id:        <span class="n">0</span>,
+      Grado:      <span class="n">1</span>,
+      Lunes:      <span class="n">1</span>,
+      Martes:     <span class="n">1</span>,
+      totalLunes:  { <span class="op">$size</span>: <span class="s">"$Lunes"</span> },
+      totalMartes: { <span class="op">$size</span>: <span class="s">"$Martes"</span> }
+    }
+  }
+])</pre>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">P2 — Contar documentos por cada grado</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+  {
+    <span class="op">$group</span>: {
+      _id:   <span class="s">"$Grado"</span>,
+      Total: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  { <span class="op">$sort</span>: { _id: <span class="n">1</span> } }
+])</pre>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">P3 — Todas las materias del Lunes sin repetir</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+  { <span class="op">$unwind</span>: <span class="s">"$Lunes"</span> },
+  { <span class="op">$group</span>:  { _id: <span class="s">"$Lunes"</span> } },
+  { <span class="op">$sort</span>:   { _id: <span class="n">1</span> } }
+])</pre>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">P4 — Cuántas veces aparece cada materia el Viernes</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+  { <span class="op">$unwind</span>: <span class="s">"$Viernes"</span> },
+  {
+    <span class="op">$group</span>: {
+      _id:   <span class="s">"$Viernes"</span>,
+      total: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  { <span class="op">$sort</span>: { total: <span class="op">-1</span> } }
+])</pre>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">P5 — Veces que "mate" aparece el Martes por grado</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+  { <span class="op">$unwind</span>: <span class="s">"$Martes"</span> },
+  { <span class="op">$match</span>:  { Martes: <span class="s">"mate"</span> } },
+  {
+    <span class="op">$group</span>: {
+      _id:            <span class="s">"$Grado"</span>,
+      totalMateMartes: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  { <span class="op">$sort</span>: { totalMateMartes: <span class="op">-1</span> } }
+])</pre>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">P6 — Top 5 materias más frecuentes de toda la semana</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Truco: usar $concatArrays para unir todos los días</span>
+<span class="fn">db</span>.Colegio.aggregate([
+  {
+    <span class="op">$addFields</span>: {
+      todosLosDias: {
+        <span class="op">$concatArrays</span>: [
+          <span class="s">"$Lunes"</span>, <span class="s">"$Martes"</span>, <span class="s">"$Miercoles"</span>,
+          <span class="s">"$Jueves"</span>, <span class="s">"$Viernes"</span>
+        ]
+      }
+    }
+  },
+  { <span class="op">$unwind</span>: <span class="s">"$todosLosDias"</span> },
+  {
+    <span class="op">$group</span>: {
+      _id:   <span class="s">"$todosLosDias"</span>,
+      total: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  { <span class="op">$sort</span>:  { total: <span class="op">-1</span> } },
+  { <span class="op">$limit</span>: <span class="n">5</span> }
+])</pre>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">P8 — totalHorasSemana: suma de materias de lunes a viernes</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+  {
+    <span class="op">$addFields</span>: {
+      totalHorasSemana: {
+        <span class="op">$sum</span>: [
+          { <span class="op">$size</span>: <span class="s">"$Lunes"</span>     },
+          { <span class="op">$size</span>: <span class="s">"$Martes"</span>    },
+          { <span class="op">$size</span>: <span class="s">"$Miercoles"</span> },
+          { <span class="op">$size</span>: <span class="s">"$Jueves"</span>    },
+          { <span class="op">$size</span>: <span class="s">"$Viernes"</span>   }
+        ]
+      }
+    }
+  }
+])</pre>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">P10 — $facet: top 5 semana + top 5 lunes en una sola consulta</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+  {
+    <span class="op">$addFields</span>: {
+      todosLosDias: {
+        <span class="op">$concatArrays</span>: [
+          <span class="s">"$Lunes"</span>, <span class="s">"$Martes"</span>, <span class="s">"$Miercoles"</span>,
+          <span class="s">"$Jueves"</span>, <span class="s">"$Viernes"</span>
+        ]
+      }
+    }
+  },
+  {
+    <span class="op">$facet</span>: {
+
+      <span class="s">"top5Semana"</span>: [
+        { <span class="op">$unwind</span>: <span class="s">"$todosLosDias"</span> },
+        { <span class="op">$group</span>:  { _id: <span class="s">"$todosLosDias"</span>, total: { <span class="op">$sum</span>: <span class="n">1</span> } } },
+        { <span class="op">$sort</span>:   { total: <span class="op">-1</span> } },
+        { <span class="op">$limit</span>:  <span class="n">5</span> }
+      ],
+
+      <span class="s">"top5Lunes"</span>: [
+        { <span class="op">$unwind</span>: <span class="s">"$Lunes"</span> },
+        { <span class="op">$group</span>:  { _id: <span class="s">"$Lunes"</span>, total: { <span class="op">$sum</span>: <span class="n">1</span> } } },
+        { <span class="op">$sort</span>:   { total: <span class="op">-1</span> } },
+        { <span class="op">$limit</span>:  <span class="n">5</span> }
+      ]
+
+    }
+  }
+])</pre>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">P11 — Clasificar materias por frecuencia (baja/media/alta)</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+  {
+    <span class="op">$addFields</span>: {
+      todosLosDias: {
+        <span class="op">$concatArrays</span>: [
+          <span class="s">"$Lunes"</span>, <span class="s">"$Martes"</span>, <span class="s">"$Miercoles"</span>,
+          <span class="s">"$Jueves"</span>, <span class="s">"$Viernes"</span>
+        ]
+      }
+    }
+  },
+  { <span class="op">$unwind</span>: <span class="s">"$todosLosDias"</span> },
+  {
+    <span class="op">$group</span>: {
+      _id:   <span class="s">"$todosLosDias"</span>,
+      total: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  {
+    <span class="op">$addFields</span>: {
+      frecuencia: {
+        <span class="op">$switch</span>: {
+          branches: [
+            { <span class="k">case</span>: { <span class="op">$lte</span>: [<span class="s">"$total"</span>, <span class="n">5</span>]  }, <span class="k">then</span>: <span class="s">"🟢 Baja frecuencia"</span>  },
+            { <span class="k">case</span>: { <span class="op">$lte</span>: [<span class="s">"$total"</span>, <span class="n">15</span>] }, <span class="k">then</span>: <span class="s">"🟡 Media frecuencia"</span> }
+          ],
+          default: <span class="s">"🔴 Alta frecuencia"</span>
+        }
+      }
+    }
+  },
+  { <span class="op">$sort</span>: { total: <span class="op">-1</span> } }
+])</pre>
+    </div>
+
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">P12 — Ranking de grados por veces que aparece "mate" en la semana</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+  {
+    <span class="op">$addFields</span>: {
+      todosLosDias: {
+        <span class="op">$concatArrays</span>: [
+          <span class="s">"$Lunes"</span>, <span class="s">"$Martes"</span>, <span class="s">"$Miercoles"</span>,
+          <span class="s">"$Jueves"</span>, <span class="s">"$Viernes"</span>
+        ]
+      }
+    }
+  },
+  { <span class="op">$unwind</span>: <span class="s">"$todosLosDias"</span> },
+  { <span class="op">$match</span>:  { todosLosDias: <span class="s">"mate"</span> } },
+  {
+    <span class="op">$group</span>: {
+      _id:       <span class="s">"$Grado"</span>,
+      vecesmate: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  { <span class="op">$sort</span>: { vecesmate: <span class="op">-1</span> } },
+  {
+    <span class="op">$addFields</span>: {
+      ranking: { <span class="op">$literal</span>: <span class="s">"ver con $setWindowFields"</span> }
+    }
+  }
+])
+
+<span class="cm">// Versión con ranking numérico usando $setWindowFields:</span>
+<span class="fn">db</span>.Colegio.aggregate([
+  {
+    <span class="op">$addFields</span>: {
+      todosLosDias: {
+        <span class="op">$concatArrays</span>: [
+          <span class="s">"$Lunes"</span>, <span class="s">"$Martes"</span>, <span class="s">"$Miercoles"</span>,
+          <span class="s">"$Jueves"</span>, <span class="s">"$Viernes"</span>
+        ]
+      }
+    }
+  },
+  { <span class="op">$unwind</span>: <span class="s">"$todosLosDias"</span> },
+  { <span class="op">$match</span>:  { todosLosDias: <span class="s">"mate"</span> } },
+  {
+    <span class="op">$group</span>: {
+      _id:       <span class="s">"$Grado"</span>,
+      vecesmate: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  {
+    <span class="op">$setWindowFields</span>: {
+      sortBy: { vecesmate: <span class="op">-1</span> },
+      output: {
+        ranking: { <span class="op">$rank</span>: {} }
+      }
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-orange">
+    <div class="card-title">⚠️ Errores comunes que ya cometiste — no los repitas</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">errores frecuentes</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// ❌ MAL: paréntesis en vez de llaves en operadores</span>
+<span class="fn">db</span>.clientes.updateOne(
+  { _id: ObjectId(<span class="s">"..."</span>) },
+  { <span class="op">$set</span>: (edad: <span class="n">20</span>) }     <span class="cm">// ← SyntaxError</span>
+)
+<span class="cm">// ✅ BIEN: siempre llaves {}</span>
+<span class="fn">db</span>.clientes.updateOne(
+  { _id: ObjectId(<span class="s">"..."</span>) },
+  { <span class="op">$set</span>: { edad: <span class="n">20</span> } }   <span class="cm">// ← correcto</span>
+)
+
+<span class="cm">// ❌ MAL: = en vez de : en el filtro</span>
+<span class="fn">db</span>.clientes.find({ PrimerNombre = <span class="s">"william"</span> })   <span class="cm">// SyntaxError</span>
+<span class="cm">// ✅ BIEN:</span>
+<span class="fn">db</span>.clientes.find({ PrimerNombre: <span class="s">"william"</span> })   <span class="cm">// correcto</span>
+
+<span class="cm">// ❌ MAL: $or con llaves {} en vez de array []</span>
+<span class="fn">db</span>.clientes.find({
+  <span class="op">$or</span>: {{ PrimerNombre: <span class="s">"susana"</span> }, { PrimerNombre: <span class="s">"fernando"</span> }}
+})   <span class="cm">// SyntaxError</span>
+<span class="cm">// ✅ BIEN: $or siempre recibe un ARRAY []</span>
+<span class="fn">db</span>.clientes.find({
+  <span class="op">$or</span>: [
+    { PrimerNombre: <span class="s">"susana"</span>   },
+    { PrimerNombre: <span class="s">"fernando"</span> }
+  ]
+})
+
+<span class="cm">// ❌ MAL: typo en el nombre del método</span>
+<span class="fn">db</span>.clientes.insertMeny([...])   <span class="cm">// TypeError: not a function</span>
+<span class="cm">// ✅ BIEN:</span>
+<span class="fn">db</span>.clientes.insertMany([...])
+
+<span class="cm">// ⚠️ OJO: MongoDB es case-sensitive en los campos</span>
+<span class="fn">db</span>.clientes.find({ edad: { <span class="op">$gt</span>: <span class="n">30</span> } })    <span class="cm">// ← campo "edad" (minúscula)</span>
+<span class="fn">db</span>.clientes.find({ Edad: { <span class="op">$gt</span>: <span class="n">30</span> } })    <span class="cm">// ← campo "Edad" (mayúscula)</span>
+<span class="cm">// Si insertaste "Edad" con mayúscula, busca con "Edad"</span>
+
+<span class="cm">// ❌ MAL: $unset necesita "" no el valor</span>
+<span class="fn">db</span>.clientes.updateOne(
+  { _id: ObjectId(<span class="s">"..."</span>) },
+  { <span class="op">$unset</span>: { edad: <span class="n">20</span> } }  <span class="cm">// funciona, pero la convención es ""</span>
+)
+<span class="cm">// ✅ CONVENCIÓN: pasar "" como valor en $unset</span>
+<span class="fn">db</span>.clientes.updateOne(
+  { _id: ObjectId(<span class="s">"..."</span>) },
+  { <span class="op">$unset</span>: { edad: <span class="s">""</span> } }   <span class="cm">// el valor no importa, el campo se elimina</span>
+)</pre>
+    </div>
+  </div>
 </div>
 
 <!-- ════════════════════ 12 REFERENCIA ════════════════════ -->
@@ -2427,6 +3160,836 @@ session.startTransaction()
     <div id="qscore" style="font-size:28px;font-weight:700;margin:10px 0"></div>
     <div id="qmsg" style="color:var(--dim);margin-bottom:16px"></div>
     <button onclick="startQuiz()" style="background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.3);color:var(--green);padding:10px 22px;border-radius:6px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px">REPETIR QUIZ</button>
+  </div>
+</div>
+
+
+<!-- ════════════════════ TIPOS DE ÍNDICE ════════════════════ -->
+<div id="sec-indices2" class="sec">
+  <div class="sec-label">09b — Tipos de Índice</div>
+  <h2 class="sec-title">Los 5 tipos de índice</h2>
+  <p class="sec-desc">Cada tipo de índice sirve para un caso específico. Saber cuándo usar cada uno es clave.</p>
+
+  <div class="card">
+    <div class="card-title">📝 Índice de Texto (Text Index)</div>
+    <div class="card-sub">Para búsqueda de palabras dentro de campos string. Como un motor de búsqueda interno. Solo puede haber <b>uno por colección</b> pero puede cubrir múltiples campos.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Crear índice de texto en uno o varios campos</span>
+<span class="fn">db</span>.libros.createIndex({
+  titulo:      <span class="s">"text"</span>,
+  descripcion: <span class="s">"text"</span>
+})
+
+<span class="cm">// Con pesos (título tiene más relevancia que descripción)</span>
+<span class="fn">db</span>.libros.createIndex(
+  { titulo: <span class="s">"text"</span>, descripcion: <span class="s">"text"</span> },
+  { weights: { titulo: <span class="n">10</span>, descripcion: <span class="n">2</span> } }
+)
+
+<span class="cm">// Buscar con $text (REQUIERE el índice creado antes)</span>
+<span class="fn">db</span>.libros.find({
+  <span class="op">$text</span>: { <span class="op">$search</span>: <span class="s">"soledad macondo"</span> }
+})
+
+<span class="cm">// Excluir palabra con guion</span>
+<span class="fn">db</span>.libros.find({
+  <span class="op">$text</span>: { <span class="op">$search</span>: <span class="s">"novela -terror"</span> }
+})
+
+<span class="cm">// Buscar frase exacta con comillas</span>
+<span class="fn">db</span>.libros.find({
+  <span class="op">$text</span>: { <span class="op">$search</span>: <span class="s">""cien años""</span> }
+})
+
+<span class="cm">// Ordenar por relevancia (textScore)</span>
+<span class="fn">db</span>.libros.find(
+  { <span class="op">$text</span>: { <span class="op">$search</span>: <span class="s">"macondo"</span> } },
+  { score: { <span class="op">$meta</span>: <span class="s">"textScore"</span> } }
+).sort({
+  score: { <span class="op">$meta</span>: <span class="s">"textScore"</span> }
+})</pre>
+    </div>
+  </div>
+
+  <div class="card c-blue">
+    <div class="card-title">📋 Índice de Arreglos (Multikey Index)</div>
+    <div class="card-sub">MongoDB lo crea <b>automáticamente</b> cuando el campo indexado es un array. Indexa cada elemento del array por separado, lo que permite búsquedas eficientes dentro de arrays.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Crear índice sobre un campo array (se vuelve multikey automáticamente)</span>
+<span class="fn">db</span>.libros.createIndex({ autores: <span class="n">1</span> })
+<span class="fn">db</span>.libros.createIndex({ tags: <span class="n">1</span> })
+
+<span class="cm">// Ahora estas búsquedas son rápidas:</span>
+<span class="fn">db</span>.libros.find({ autores: ObjectId(<span class="s">"..."</span>) })
+<span class="fn">db</span>.libros.find({ tags: <span class="s">"terror"</span> })
+<span class="fn">db</span>.libros.find({ tags: { <span class="op">$all</span>: [<span class="s">"clasico"</span>, <span class="s">"novela"</span>] } })
+
+<span class="cm">// Verificar que es multikey con explain</span>
+<span class="fn">db</span>.libros.find({ tags: <span class="s">"terror"</span> }).explain(<span class="s">"executionStats"</span>)
+<span class="cm">// Busca "isMultiKey": true en el output</span>
+
+<span class="cm">// LIMITACIÓN: no puedes crear índice compuesto</span>
+<span class="cm">// con DOS campos que sean arrays al mismo tiempo</span>
+<span class="fn">db</span>.libros.createIndex({ autores: <span class="n">1</span>, tags: <span class="n">1</span> })  <span class="cm">// ← ERROR si ambos son arrays</span></pre>
+    </div>
+  </div>
+
+  <div class="card c-orange">
+    <div class="card-title">🔒 Unique Index (Índice Único)</div>
+    <div class="card-sub">Garantiza que no haya dos documentos con el mismo valor en ese campo. Perfecto para emails, DNIs, códigos ISBN, etc.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Índice único simple</span>
+<span class="fn">db</span>.clientes.createIndex(
+  { email: <span class="n">1</span> },
+  { unique: <span class="b">true</span> }
+)
+
+<span class="cm">// Índice único compuesto (la COMBINACIÓN debe ser única)</span>
+<span class="fn">db</span>.libros.createIndex(
+  { isbn: <span class="n">1</span>, editorial: <span class="n">1</span> },
+  { unique: <span class="b">true</span> }
+)
+
+<span class="cm">// Unique + sparse: solo aplica a docs que TIENEN el campo</span>
+<span class="cm">// (permite múltiples docs sin el campo, pero los que lo tienen deben ser únicos)</span>
+<span class="fn">db</span>.usuarios.createIndex(
+  { telefono: <span class="n">1</span> },
+  { unique: <span class="b">true</span>, sparse: <span class="b">true</span> }
+)
+
+<span class="cm">// Si intentas insertar un duplicado:</span>
+<span class="cm">// MongoServerError: E11000 duplicate key error</span>
+
+<span class="cm">// Ver si un índice es único</span>
+<span class="fn">db</span>.clientes.getIndexes()
+<span class="cm">// Busca: "unique": true en el output</span></pre>
+    </div>
+  </div>
+
+  <div class="card c-yellow">
+    <div class="card-title">📊 Índice de Rango (Range Index)</div>
+    <div class="card-sub">El tipo <b>más común</b>. Un índice normal (1 o -1) actúa como índice de rango porque permite buscar eficientemente con $gt, $lt, $between, etc.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Índice de rango básico</span>
+<span class="fn">db</span>.libros.createIndex({ numero_paginas: <span class="n">1</span> })
+<span class="fn">db</span>.pedidos.createIndex({ fecha_prestamo: <span class="n">-1</span> })
+
+<span class="cm">// Con este índice, estas consultas son RÁPIDAS:</span>
+<span class="fn">db</span>.libros.find({ numero_paginas: { <span class="op">$gt</span>: <span class="n">300</span> } })
+<span class="fn">db</span>.libros.find({ numero_paginas: { <span class="op">$gte</span>: <span class="n">200</span>, <span class="op">$lte</span>: <span class="n">500</span> } })
+<span class="fn">db</span>.prestamos.find({
+  fecha_prestamo: {
+    <span class="op">$gte</span>: <span class="fn">ISODate</span>(<span class="s">"2024-01-01"</span>),
+    <span class="op">$lt</span>:  <span class="fn">ISODate</span>(<span class="s">"2025-01-01"</span>)
+  }
+})
+
+<span class="cm">// Índice compuesto para rango: muy útil para filtrar + ordenar</span>
+<span class="fn">db</span>.libros.createIndex({ idioma: <span class="n">1</span>, numero_paginas: <span class="n">-1</span> })
+<span class="cm">// Esto acelera: find({ idioma: "Español" }).sort({ numero_paginas: -1 })</span>
+
+<span class="cm">// REGLA: En un índice compuesto, los campos de igualdad van primero,</span>
+<span class="cm">// luego los de rango, luego los de sort.</span>
+<span class="cm">// Ejemplo: { idioma: 1, genero: 1, numero_paginas: 1 }</span></pre>
+    </div>
+  </div>
+
+  <div class="card c-purple">
+    <div class="card-title">🌍 Índice Geoespacial (2dsphere / 2d)</div>
+    <div class="card-sub">Para consultas de ubicación: encontrar lugares cercanos, dentro de un área, etc. <b>2dsphere</b> = coordenadas GPS reales. <b>2d</b> = plano cartesiano simple.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Crear colección con documentos geoespaciales</span>
+<span class="fn">db</span>.lugares.insertMany([
+  {
+    nombre: <span class="s">"Biblioteca Central"</span>,
+    ubicacion: {
+      type:        <span class="s">"Point"</span>,
+      coordinates: [<span class="op">-75.5636</span>, <span class="n">6.2442</span>]  <span class="cm">// [longitud, latitud]</span>
+    }
+  },
+  {
+    nombre: <span class="s">"Parque Central"</span>,
+    ubicacion: {
+      type:        <span class="s">"Point"</span>,
+      coordinates: [<span class="op">-75.5750</span>, <span class="n">6.2518</span>]
+    }
+  }
+])
+
+<span class="cm">// Crear índice 2dsphere (obligatorio para consultas geo)</span>
+<span class="fn">db</span>.lugares.createIndex({ ubicacion: <span class="s">"2dsphere"</span> })
+
+<span class="cm">// Buscar lugares CERCANOS a un punto (en metros)</span>
+<span class="fn">db</span>.lugares.find({
+  ubicacion: {
+    <span class="op">$near</span>: {
+      <span class="op">$geometry</span>: {
+        type:        <span class="s">"Point"</span>,
+        coordinates: [<span class="op">-75.5636</span>, <span class="n">6.2442</span>]
+      },
+      <span class="op">$maxDistance</span>: <span class="n">1000</span>   <span class="cm">// 1000 metros = 1 km</span>
+    }
+  }
+})
+
+<span class="cm">// Buscar dentro de un RADIO con $geoWithin + $centerSphere</span>
+<span class="fn">db</span>.lugares.find({
+  ubicacion: {
+    <span class="op">$geoWithin</span>: {
+      <span class="op">$centerSphere</span>: [
+        [<span class="op">-75.5636</span>, <span class="n">6.2442</span>],  <span class="cm">// centro</span>
+        <span class="n">5</span> / <span class="n">6378.1</span>             <span class="cm">// 5 km en radianes</span>
+      ]
+    }
+  }
+})
+
+<span class="cm">// $geoWithin con polígono (área irregular)</span>
+<span class="fn">db</span>.lugares.find({
+  ubicacion: {
+    <span class="op">$geoWithin</span>: {
+      <span class="op">$geometry</span>: {
+        type: <span class="s">"Polygon"</span>,
+        coordinates: [[
+          [<span class="op">-75.60</span>, <span class="n">6.20</span>],
+          [<span class="op">-75.50</span>, <span class="n">6.20</span>],
+          [<span class="op">-75.50</span>, <span class="n">6.30</span>],
+          [<span class="op">-75.60</span>, <span class="n">6.30</span>],
+          [<span class="op">-75.60</span>, <span class="n">6.20</span>]   <span class="cm">// cierra el polígono</span>
+        ]]
+      }
+    }
+  }
+})</pre>
+    </div>
+  </div>
+
+  <div class="alert a-tip" style="margin-top:8px">💡 <b>Resumen rápido:</b> Texto → buscar palabras | Arreglos → buscar en arrays | Único → sin duplicados | Rango → $gt/$lt/fechas | Geoespacial → coordenadas GPS</div>
+</div>
+
+<!-- ════════════════════ $setWindowFields ════════════════════ -->
+<div id="sec-windowfields" class="sec">
+  <div class="sec-label">14 — Análisis avanzado</div>
+  <h2 class="sec-title">$setWindowFields</h2>
+  <p class="sec-desc">Permite cálculos tipo SQL <span class="ic">OVER(PARTITION BY ... ORDER BY ...)</span>: rankings, acumulados, comparaciones con el documento anterior/siguiente. Disponible desde MongoDB 5.0.</p>
+
+  <div class="alert a-info">ℹ️ La diferencia con <span class="ic">$group</span> es que <b>$setWindowFields no colapsa los documentos</b>. Cada documento conserva todos sus campos y además recibe el campo calculado.</div>
+
+  <div class="card">
+    <div class="card-title">🏆 Ranking: $rank y $denseRank</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Rankear libros por número de páginas dentro de cada idioma</span>
+<span class="fn">db</span>.detalles_libros.aggregate([
+  {
+    <span class="op">$setWindowFields</span>: {
+      partitionBy: <span class="s">"$idioma"</span>,         <span class="cm">// ← como GROUP BY en SQL</span>
+      sortBy: { numero_paginas: <span class="op">-1</span> },   <span class="cm">// ← criterio de ranking</span>
+      output: {
+        ranking: {
+          <span class="op">$rank</span>: {}        <span class="cm">// 1, 2, 3... (salta números si hay empates)</span>
+        },
+        ranking_denso: {
+          <span class="op">$denseRank</span>: {}  <span class="cm">// 1, 2, 2, 3... (no salta números)</span>
+        }
+      }
+    }
+  },
+  { <span class="op">$sort</span>: { idioma: <span class="n">1</span>, ranking: <span class="n">1</span> } }
+])
+
+<span class="cm">// Rankear clientes por total gastado (sin partición = global)</span>
+<span class="fn">db</span>.clientes.aggregate([
+  {
+    <span class="op">$setWindowFields</span>: {
+      sortBy: { total_gastado: <span class="op">-1</span> },
+      output: {
+        puesto: { <span class="op">$rank</span>: {} }
+      }
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-blue">
+    <div class="card-title">📈 Acumulados: $sum, $avg con ventana</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Total acumulado de ventas mes a mes</span>
+<span class="fn">db</span>.pedidos.aggregate([
+  { <span class="op">$sort</span>: { fecha: <span class="n">1</span> } },
+  {
+    <span class="op">$setWindowFields</span>: {
+      sortBy: { fecha: <span class="n">1</span> },
+      output: {
+        total_acumulado: {
+          <span class="op">$sum</span>: <span class="s">"$total"</span>,
+          window: {
+            documents: [<span class="s">"unbounded"</span>, <span class="s">"current"</span>]
+            <span class="cm">// "unbounded" = desde el inicio, "current" = hasta el doc actual</span>
+          }
+        },
+        promedio_movil_3: {
+          <span class="op">$avg</span>: <span class="s">"$total"</span>,
+          window: {
+            documents: [<span class="op">-2</span>, <span class="n">0</span>]
+            <span class="cm">// Los 2 anteriores + el actual = ventana de 3</span>
+          }
+        }
+      }
+    }
+  }
+])
+
+<span class="cm">// Acumulado por cliente (partición)</span>
+<span class="fn">db</span>.pedidos.aggregate([
+  {
+    <span class="op">$setWindowFields</span>: {
+      partitionBy: <span class="s">"$cliente_id"</span>,
+      sortBy:      { fecha: <span class="n">1</span> },
+      output: {
+        gasto_acumulado_cliente: {
+          <span class="op">$sum</span>: <span class="s">"$total"</span>,
+          window: { documents: [<span class="s">"unbounded"</span>, <span class="s">"current"</span>] }
+        }
+      }
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-orange">
+    <div class="card-title">↔️ $shift — comparar con doc anterior/siguiente</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Ver el precio del pedido anterior para comparar</span>
+<span class="fn">db</span>.pedidos.aggregate([
+  {
+    <span class="op">$setWindowFields</span>: {
+      partitionBy: <span class="s">"$cliente_id"</span>,
+      sortBy: { fecha: <span class="n">1</span> },
+      output: {
+        total_anterior: {
+          <span class="op">$shift</span>: {
+            output:  <span class="s">"$total"</span>,
+            by:      <span class="op">-1</span>,           <span class="cm">// -1 = doc anterior, 1 = siguiente</span>
+            default: <span class="s">"sin pedido previo"</span>
+          }
+        }
+      }
+    }
+  },
+  <span class="cm">// Calcular la diferencia con el pedido anterior</span>
+  {
+    <span class="op">$addFields</span>: {
+      diferencia: {
+        <span class="op">$subtract</span>: [<span class="s">"$total"</span>, { <span class="op">$ifNull</span>: [<span class="s">"$total_anterior"</span>, <span class="n">0</span>] }]
+      }
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-purple">
+    <div class="card-title">🔢 $documentNumber y $count en ventana</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Numerar documentos dentro de cada partición</span>
+<span class="fn">db</span>.libros.aggregate([
+  {
+    <span class="op">$setWindowFields</span>: {
+      partitionBy: <span class="s">"$genero"</span>,
+      sortBy:      { titulo: <span class="n">1</span> },
+      output: {
+        numero_en_genero: {
+          <span class="op">$documentNumber</span>: {}
+        },
+        total_en_genero: {
+          <span class="op">$count</span>: {},
+          window: { documents: [<span class="s">"unbounded"</span>, <span class="s">"unbounded"</span>] }
+        }
+      }
+    }
+  }
+])
+
+<span class="cm">// Diferencia con $group:</span>
+<span class="cm">// $group:           { _id: "$genero", total: { $sum: 1 } }  → colapsa docs</span>
+<span class="cm">// $setWindowFields: → cada doc conserva todos sus campos + recibe total_en_genero</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ CASOS REALES ════════════════════ -->
+<div id="sec-practica" class="sec">
+  <div class="sec-label">15 — Casos Reales</div>
+  <h2 class="sec-title">Consultas de clase: Biblioteca y Colegio</h2>
+  <p class="sec-desc">Los ejercicios reales trabajados en clase. Entiende cada stage y para qué sirve.</p>
+
+  <div class="card c-cyan">
+    <div class="card-title">📚 Base de datos: Biblioteca</div>
+    <div class="card-sub">Colecciones: <span class="ic">libros</span> · <span class="ic">detalles_libros</span> · <span class="ic">prestamos</span> · <span class="ic">usuarios</span> · <span class="ic">autores</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔍 Consulta 1 — Libros con más de 300 páginas, en español, que no sean novela, ordenados por fecha</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.detalles_libros.aggregate([
+
+  <span class="cm">// $match filtra: las 3 condiciones deben cumplirse (AND implícito)</span>
+  {
+    <span class="op">$match</span>: {
+      numero_paginas: { <span class="op">$gt</span>: <span class="n">300</span> },  <span class="cm">// más de 300 páginas</span>
+      idioma:         <span class="s">"Español"</span>,        <span class="cm">// exactamente "Español"</span>
+      genero:         { <span class="op">$ne</span>: <span class="s">"Novela"</span> }  <span class="cm">// que NO sea novela</span>
+    }
+  },
+
+  <span class="cm">// $sort: -1 = más reciente primero, 1 = más antiguo primero</span>
+  {
+    <span class="op">$sort</span>: { fecha_publicacion: <span class="op">-1</span> }
+  }
+
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-blue">
+    <div class="card-title">📦 Consulta 2 — Libros que NO fueron prestados</div>
+    <div class="card-sub">Truco: usar distinct() para sacar los IDs prestados y luego $nin para excluirlos.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.libros.aggregate([
+  {
+    <span class="op">$match</span>: {
+      <span class="cm">// distinct() retorna un array con todos los id_libro prestados</span>
+      <span class="cm">// $nin excluye los libros que SÍ fueron prestados</span>
+      _id: {
+        <span class="op">$nin</span>: <span class="fn">db</span>.prestamos.distinct(<span class="s">"id_libro"</span>)
+      }
+    }
+  },
+  {
+    <span class="op">$group</span>: {
+      _id:               <span class="b">null</span>,
+      LibrosNoPrestados: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-orange">
+    <div class="card-title">🔗 Consulta 3 — $lookup: libro prestado con sus detalles</div>
+    <div class="card-sub">Relacionar detalles_libros con la colección libros para ver el título del libro junto a sus detalles.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.detalles_libros.aggregate([
+
+  <span class="cm">// Stage 1: unir con la colección libros</span>
+  {
+    <span class="op">$lookup</span>: {
+      from:         <span class="s">"libros"</span>,    <span class="cm">// colección a unir</span>
+      localField:   <span class="s">"libro_id"</span>,  <span class="cm">// campo en detalles_libros</span>
+      foreignField: <span class="s">"_id"</span>,       <span class="cm">// campo en libros</span>
+      as:           <span class="s">"libro"</span>      <span class="cm">// nombre del array resultante</span>
+    }
+  },
+
+  <span class="cm">// Stage 2: filtrar los que cumplan condiciones</span>
+  {
+    <span class="op">$match</span>: {
+      numero_paginas: { <span class="op">$gt</span>: <span class="n">300</span> },
+      idioma:         <span class="s">"Español"</span>,
+      genero:         { <span class="op">$ne</span>: <span class="s">"Novela"</span> }
+    }
+  },
+
+  <span class="cm">// Stage 3: ordenar</span>
+  {
+    <span class="op">$sort</span>: { fecha_publicacion: <span class="op">-1</span> }
+  }
+
+])
+
+<span class="cm">// Mostrar nombre del usuario y título del libro prestado</span>
+<span class="fn">db</span>.prestamos.aggregate([
+  {
+    <span class="op">$lookup</span>: {
+      from:         <span class="s">"usuarios"</span>,
+      localField:   <span class="s">"usuario_id"</span>,
+      foreignField: <span class="s">"_id"</span>,
+      as:           <span class="s">"usuario"</span>
+    }
+  },
+  { <span class="op">$unwind</span>: <span class="s">"$usuario"</span> },
+  {
+    <span class="op">$lookup</span>: {
+      from:         <span class="s">"libros"</span>,
+      localField:   <span class="s">"id_libro"</span>,
+      foreignField: <span class="s">"_id"</span>,
+      as:           <span class="s">"libro"</span>
+    }
+  },
+  { <span class="op">$unwind</span>: <span class="s">"$libro"</span> },
+  {
+    <span class="op">$project</span>: {
+      _id:              <span class="n">0</span>,
+      <span class="s">"usuario.nombre"</span>: <span class="n">1</span>,
+      <span class="s">"libro.titulo"</span>:   <span class="n">1</span>,
+      fecha_prestamo:   <span class="n">1</span>
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-purple">
+    <div class="card-title">📊 Consulta 4 — Libro más prestado en 2024</div>
+    <div class="card-sub">Combina $match (filtro por fecha), $group (contar) y $sort (ordenar).</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.prestamos.aggregate([
+
+  <span class="cm">// Stage 1: solo préstamos del 2024</span>
+  <span class="cm">// $gt = después del 1 enero (sin incluirlo)</span>
+  <span class="cm">// $gte = desde el 1 enero (incluyéndolo) — usa $gte para incluir</span>
+  {
+    <span class="op">$match</span>: {
+      fecha_prestamo: {
+        <span class="op">$gte</span>: <span class="fn">ISODate</span>(<span class="s">"2024-01-01"</span>)
+      }
+    }
+  },
+
+  <span class="cm">// Stage 2: contar cuántas veces se prestó cada libro</span>
+  {
+    <span class="op">$group</span>: {
+      _id:         <span class="s">"$id_libro"</span>,   <span class="cm">// agrupa por libro</span>
+      numPrestamos: { <span class="op">$sum</span>: <span class="n">1</span> }   <span class="cm">// cuenta préstamos</span>
+    }
+  },
+
+  <span class="cm">// Stage 3: el más prestado primero</span>
+  {
+    <span class="op">$sort</span>: { numPrestamos: <span class="op">-1</span> }
+  },
+
+  <span class="cm">// Stage 4: solo el top 1</span>
+  { <span class="op">$limit</span>: <span class="n">1</span> }
+
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-yellow">
+    <div class="card-title">🧮 Consulta 5 — $addFields con $dateDiff (días de préstamo)</div>
+    <div class="card-sub">Calcula cuántos días duró cada préstamo.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.prestamos.aggregate([
+  {
+    <span class="op">$addFields</span>: {
+      dias_prestamo: {
+        <span class="op">$dateDiff</span>: {
+          startDate: <span class="s">"$fecha_prestamo"</span>,
+          endDate:   <span class="s">"$fecha_devolucion"</span>,
+          unit:      <span class="s">"day"</span>   <span class="cm">// "second" | "minute" | "hour" | "day" | "month" | "year"</span>
+        }
+      }
+    }
+  },
+
+  <span class="cm">// Filtrar préstamos de más de 7 días</span>
+  {
+    <span class="op">$match</span>: {
+      dias_prestamo: { <span class="op">$gt</span>: <span class="n">7</span> }
+    }
+  },
+
+  {
+    <span class="op">$sort</span>: { dias_prestamo: <span class="op">-1</span> }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="card c-cyan">
+    <div class="card-title">🏫 Base de datos: Colegio</div>
+    <div class="card-sub">Colección <span class="ic">Colegio</span> con campos: <span class="ic">Grado</span>, <span class="ic">Lunes</span>, <span class="ic">Martes</span>, <span class="ic">Miercoles</span>, <span class="ic">Jueves</span>, <span class="ic">Viernes</span> (cada día es un array de materias)</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">P1 — Mostrar Grado, Lunes y Martes solo para grado 6</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+  <span class="cm">// Filtrar solo grado 6</span>
+  { <span class="op">$match</span>: { Grado: <span class="s">"6"</span> } },
+
+  {
+    <span class="op">$project</span>: {
+      _id:         <span class="n">0</span>,
+      Grado:       <span class="n">1</span>,
+      Lunes:       <span class="n">1</span>,
+      Martes:      <span class="n">1</span>,
+      <span class="cm">// $size calcula el tamaño de un array en proyección</span>
+      totalLunes:  { <span class="op">$size</span>: <span class="s">"$Lunes"</span> },
+      totalMartes: { <span class="op">$size</span>: <span class="s">"$Martes"</span> }
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-blue">
+    <div class="card-title">P2 — Contar documentos por grado</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+  {
+    <span class="op">$group</span>: {
+      _id:   <span class="s">"$Grado"</span>,
+      Total: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  { <span class="op">$sort</span>: { _id: <span class="n">1</span> } }   <span class="cm">// orden ascendente por grado</span>
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-orange">
+    <div class="card-title">P3 — Materias del lunes sin repetir</div>
+    <div class="card-sub">Patrón clásico: $unwind para descomponer el array → $group para deduplicar.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+  <span class="cm">// Cada elemento del array Lunes se convierte en un documento separado</span>
+  { <span class="op">$unwind</span>: <span class="s">"$Lunes"</span> },
+
+  <span class="cm">// Al agrupar por el campo, automáticamente elimina duplicados</span>
+  { <span class="op">$group</span>: { _id: <span class="s">"$Lunes"</span> } },
+
+  { <span class="op">$sort</span>: { _id: <span class="n">1</span> } }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-yellow">
+    <div class="card-title">P4 y P7 — Frecuencia de materias por día</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Cuántas veces aparece cada materia el Viernes</span>
+<span class="fn">db</span>.Colegio.aggregate([
+  { <span class="op">$unwind</span>: <span class="s">"$Viernes"</span> },
+  {
+    <span class="op">$group</span>: {
+      _id:   <span class="s">"$Viernes"</span>,
+      total: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  { <span class="op">$sort</span>: { total: <span class="op">-1</span> } }
+])
+
+<span class="cm">// Cuántas veces aparece cada materia el Jueves</span>
+<span class="fn">db</span>.Colegio.aggregate([
+  { <span class="op">$unwind</span>: <span class="s">"$Jueves"</span> },
+  {
+    <span class="op">$group</span>: {
+      _id:   <span class="s">"$Jueves"</span>,
+      total: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  { <span class="op">$sort</span>: { total: <span class="op">-1</span> } }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-purple">
+    <div class="card-title">P8 — Total de horas en la semana por documento</div>
+    <div class="card-sub">$addFields + $size para calcular el total de materias (clases) en la semana.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+  {
+    <span class="op">$addFields</span>: {
+      <span class="cm">// $sum sobre un array de valores los suma todos</span>
+      totalHorasSemana: {
+        <span class="op">$sum</span>: [
+          { <span class="op">$size</span>: <span class="s">"$Lunes"</span>     },
+          { <span class="op">$size</span>: <span class="s">"$Martes"</span>    },
+          { <span class="op">$size</span>: <span class="s">"$Miercoles"</span> },
+          { <span class="op">$size</span>: <span class="s">"$Jueves"</span>    },
+          { <span class="op">$size</span>: <span class="s">"$Viernes"</span>   }
+        ]
+      }
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">P10 — $facet: top materias globales Y top del lunes en una sola consulta</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+  {
+    <span class="op">$facet</span>: {
+
+      <span class="cm">// Faceta 1: top 5 materias del Martes (todos los grados)</span>
+      <span class="s">"top5_semana"</span>: [
+        { <span class="op">$unwind</span>: <span class="s">"$Martes"</span> },
+        {
+          <span class="op">$group</span>: {
+            _id:   <span class="s">"$Martes"</span>,
+            total: { <span class="op">$sum</span>: <span class="n">1</span> }
+          }
+        },
+        { <span class="op">$sort</span>: { total: <span class="op">-1</span> } },
+        { <span class="op">$limit</span>: <span class="n">5</span> }
+      ],
+
+      <span class="cm">// Faceta 2: top 5 materias del Lunes</span>
+      <span class="s">"top5_lunes"</span>: [
+        { <span class="op">$unwind</span>: <span class="s">"$Lunes"</span> },
+        {
+          <span class="op">$group</span>: {
+            _id:   <span class="s">"$Lunes"</span>,
+            total: { <span class="op">$sum</span>: <span class="n">1</span> }
+          }
+        },
+        { <span class="op">$sort</span>: { total: <span class="op">-1</span> } },
+        { <span class="op">$limit</span>: <span class="n">5</span> }
+      ]
+
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-red">
+    <div class="card-title">P11 — $bucket: clasificar materias por frecuencia semanal</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+
+  <span class="cm">// Paso 1: calcular cuántas veces aparece cada materia en toda la semana</span>
+  {
+    <span class="op">$project</span>: {
+      semana: {
+        <span class="op">$concatArrays</span>: [
+          <span class="s">"$Lunes"</span>, <span class="s">"$Martes"</span>, <span class="s">"$Miercoles"</span>, <span class="s">"$Jueves"</span>, <span class="s">"$Viernes"</span>
+        ]
+      }
+    }
+  },
+  { <span class="op">$unwind</span>: <span class="s">"$semana"</span> },
+  {
+    <span class="op">$group</span>: {
+      _id:            <span class="s">"$semana"</span>,
+      frecuenciaSemanal: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+
+  <span class="cm">// Paso 2: clasificar por frecuencia</span>
+  {
+    <span class="op">$bucket</span>: {
+      groupBy:    <span class="s">"$frecuenciaSemanal"</span>,
+      boundaries: [<span class="n">0</span>, <span class="n">5</span>, <span class="n">15</span>, <span class="n">100</span>],
+      default:    <span class="s">"Alta frecuencia"</span>,
+      output: {
+        materias:     { <span class="op">$push</span>: <span class="s">"$_id"</span> },
+        totalMaterias:{ <span class="op">$sum</span>: <span class="n">1</span> }
+      }
+    }
+  }
+])
+
+<span class="cm">// Alternativa con $switch para etiquetar (más legible):</span>
+<span class="fn">db</span>.Colegio.aggregate([
+  <span class="cm">/* ... stages anteriores ... */</span>
+  {
+    <span class="op">$addFields</span>: {
+      clasificacion: {
+        <span class="op">$switch</span>: {
+          branches: [
+            {
+              <span class="k">case</span>: { <span class="op">$lt</span>: [<span class="s">"$frecuenciaSemanal"</span>, <span class="n">5</span>] },
+              <span class="k">then</span>: <span class="s">"🟢 Baja frecuencia"</span>
+            },
+            {
+              <span class="k">case</span>: { <span class="op">$lt</span>: [<span class="s">"$frecuenciaSemanal"</span>, <span class="n">15</span>] },
+              <span class="k">then</span>: <span class="s">"🟡 Media frecuencia"</span>
+            }
+          ],
+          default: <span class="s">"🔴 Alta frecuencia"</span>
+        }
+      }
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-cyan">
+    <div class="card-title">P12 — Ranking de grados por presencia de "mate"</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.Colegio.aggregate([
+
+  <span class="cm">// Unir todos los días en un solo array</span>
+  {
+    <span class="op">$addFields</span>: {
+      semana: {
+        <span class="op">$concatArrays</span>: [
+          <span class="s">"$Lunes"</span>, <span class="s">"$Martes"</span>, <span class="s">"$Miercoles"</span>, <span class="s">"$Jueves"</span>, <span class="s">"$Viernes"</span>
+        ]
+      }
+    }
+  },
+
+  <span class="cm">// Descomponer para poder filtrar</span>
+  { <span class="op">$unwind</span>: <span class="s">"$semana"</span> },
+
+  <span class="cm">// Solo las ocurrencias de "mate"</span>
+  { <span class="op">$match</span>: { semana: <span class="s">"mate"</span> } },
+
+  <span class="cm">// Contar por grado</span>
+  {
+    <span class="op">$group</span>: {
+      _id:        <span class="s">"$Grado"</span>,
+      veces_mate: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+
+  <span class="cm">// Ordenar: el grado con más mate primero</span>
+  { <span class="op">$sort</span>: { veces_mate: <span class="op">-1</span> } },
+
+  <span class="cm">// Añadir el puesto del ranking</span>
+  {
+    <span class="op">$setWindowFields</span>: {
+      sortBy: { veces_mate: <span class="op">-1</span> },
+      output: {
+        puesto: { <span class="op">$rank</span>: {} }
+      }
+    }
+  }
+
+])</pre>
+    </div>
   </div>
 </div>
 
@@ -2530,6 +4093,168 @@ function showRes() {
 }
 
 startQuiz();
+
+// ── SEARCH DATABASE ──────────────────────────────────
+const SEARCH_DB = [
+  { term: "$match", desc: "Filtra documentos en el pipeline. Equivale a WHERE en SQL. Siempre ponlo al inicio para optimizar.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$group", desc: "Agrupa documentos y permite acumuladores: $sum, $avg, $max, $min, $first, $last, $push, $addToSet. El campo _id define el criterio de agrupación.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$project", desc: "Reestructura documentos: incluye/excluye campos (1/0), crea campos calculados, renombra campos.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$unwind", desc: "Convierte cada elemento de un array en un documento separado. Úsalo antes de $group cuando el campo es array.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$sort", desc: "Ordena documentos. 1 = ascendente, -1 = descendente. Puede ordenar por múltiples campos.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$limit", desc: "Limita el número de documentos en el resultado.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$skip", desc: "Salta N documentos. Útil para paginación junto con $limit.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$count", desc: "Cuenta los documentos que llegan al stage y retorna un solo doc con el total.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$addFields", desc: "Agrega o modifica campos en el pipeline SIN afectar los campos existentes. $set es su alias. No modifica la base de datos.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$set", desc: "Alias de $addFields en el pipeline. También es operador de update para asignar valores a campos.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$unset", desc: "Elimina campos del pipeline. En update: elimina un campo del documento.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$replaceRoot", desc: "Reemplaza el documento raíz con un subdocumento. Útil con $mergeObjects para elevar campos anidados.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$bucket", desc: "Clasifica documentos en rangos definidos manualmente (como un histograma). Ej: clasificar libros por páginas.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$bucketAuto", desc: "Igual que $bucket pero MongoDB calcula los rangos automáticamente según el número de grupos deseados.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$facet", desc: "Ejecuta múltiples sub-pipelines en paralelo sobre los mismos datos. Ideal para dashboards o reportes con varias métricas.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$out", desc: "Guarda el resultado del pipeline en una nueva colección. REEMPLAZA la colección si ya existe.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$merge", desc: "Guarda el resultado del pipeline en una colección existente. Más flexible que $out: puede hacer upsert.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$sample", desc: "Retorna N documentos aleatorios de la colección.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$lookup", desc: "Une dos colecciones (equivale a JOIN en SQL). El resultado se agrega como array. Usar $unwind para aplanarlo.", section: "lookup", nav: "07 · $lookup" },
+  { term: "$setWindowFields", desc: "Cálculos tipo SQL OVER(): rankings ($rank, $denseRank), acumulados, comparaciones con doc anterior ($shift). No colapsa documentos.", section: "misc", nav: "11 · Extra" },
+  { term: "$rank", desc: "Dentro de $setWindowFields: asigna un número de ranking. Salta números en caso de empate (1,2,2,4).", section: "misc", nav: "11 · Extra" },
+  { term: "$denseRank", desc: "Dentro de $setWindowFields: ranking sin saltar números en empates (1,2,2,3).", section: "misc", nav: "11 · Extra" },
+  { term: "$shift", desc: "Dentro de $setWindowFields: accede al valor del documento anterior (-1) o siguiente (1).", section: "misc", nav: "11 · Extra" },
+  { term: "$graphLookup", desc: "Búsqueda recursiva en grafos/árboles (categorías anidadas, organigramas). Recorre relaciones padre-hijo.", section: "misc", nav: "11 · Extra" },
+  { term: "$expr", desc: "Permite usar expresiones de agregación dentro de $match o find(). Sirve para comparar dos campos del mismo documento.", section: "lookup", nav: "07 · $lookup" },
+  { term: "$cond", desc: "Condicional ternario: if → then → else. Forma corta: [$condicion, valorSi, valorNo].", section: "exprs", nav: "08 · Expresiones" },
+  { term: "$switch", desc: "Multiple condiciones como switch/case. Tiene branches (array de {case, then}) y un default.", section: "exprs", nav: "08 · Expresiones" },
+  { term: "$ifNull", desc: "Retorna el segundo valor si el primero es null o no existe. Útil para valores por defecto.", section: "exprs", nav: "08 · Expresiones" },
+  { term: "$map", desc: "Transforma cada elemento de un array aplicando una expresión. Como Array.map() en JavaScript.", section: "exprs", nav: "08 · Expresiones" },
+  { term: "$filter", desc: "Filtra elementos de un array que cumplan una condición. Como Array.filter() en JavaScript.", section: "exprs", nav: "08 · Expresiones" },
+  { term: "$reduce", desc: "Reduce un array a un solo valor aplicando una expresión acumulativa.", section: "exprs", nav: "08 · Expresiones" },
+  { term: "$concatArrays", desc: "Une dos o más arrays en uno solo.", section: "exprs", nav: "08 · Expresiones" },
+  { term: "$size", desc: "Retorna el tamaño (número de elementos) de un array.", section: "exprs", nav: "08 · Expresiones" },
+  { term: "$sum", desc: "En $group: suma todos los valores del campo. En $project: suma valores de un array. En ventana: suma acumulada.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$avg", desc: "Calcula el promedio de un campo numérico dentro de un grupo.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$max", desc: "Retorna el valor máximo del campo en el grupo.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$min", desc: "Retorna el valor mínimo del campo en el grupo.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$first", desc: "Retorna el primer valor del grupo (en el orden del pipeline).", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$last", desc: "Retorna el último valor del grupo (en el orden del pipeline).", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$push", desc: "En $group: crea un array con todos los valores del campo (permite repetidos). En update: agrega elemento al array.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$addToSet", desc: "En $group: crea un array sin valores duplicados. En update: push sin duplicar.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "insertOne", desc: "Inserta exactamente un documento. Retorna insertedId.", section: "crud", nav: "01 · CRUD" },
+  { term: "insertMany", desc: "Inserta un array de documentos. Con ordered:false continúa aunque falle alguno.", section: "crud", nav: "01 · CRUD" },
+  { term: "find", desc: "Lee documentos. Acepta filtro y proyección. Encadena .sort().limit().skip().", section: "crud", nav: "01 · CRUD" },
+  { term: "findOne", desc: "Retorna solo el primer documento que coincida con el filtro.", section: "crud", nav: "01 · CRUD" },
+  { term: "updateOne", desc: "Actualiza el primer documento que coincida. Usa operadores de update: $set, $inc, $unset, etc.", section: "crud", nav: "01 · CRUD" },
+  { term: "updateMany", desc: "Actualiza TODOS los documentos que coincidan con el filtro.", section: "crud", nav: "01 · CRUD" },
+  { term: "deleteOne", desc: "Elimina el primer documento que coincida.", section: "crud", nav: "01 · CRUD" },
+  { term: "deleteMany", desc: "Elimina TODOS los documentos que coincidan. Con {} elimina todos.", section: "crud", nav: "01 · CRUD" },
+  { term: "bulkWrite", desc: "Ejecuta múltiples operaciones (insert, update, delete) en una sola llamada al servidor.", section: "misc", nav: "11 · Extra" },
+  { term: "aggregate", desc: "Ejecuta el pipeline de agregación. Recibe un array de stages. Más poderoso que find() para análisis.", section: "pipe", nav: "05 · Pipeline Intro" },
+  { term: "countDocuments", desc: "Cuenta documentos que coinciden con el filtro. Más preciso que estimatedDocumentCount.", section: "crud", nav: "01 · CRUD" },
+  { term: "distinct", desc: "Retorna un array con los valores únicos de un campo.", section: "crud", nav: "01 · CRUD" },
+  { term: "$set (update)", desc: "Operador de update: asigna valor a un campo. Si el campo no existe, lo crea.", section: "upd", nav: "03 · Update Ops" },
+  { term: "$inc", desc: "Incrementa (o decrementa con negativo) un campo numérico.", section: "upd", nav: "03 · Update Ops" },
+  { term: "$mul", desc: "Multiplica el valor actual de un campo por el número dado.", section: "upd", nav: "03 · Update Ops" },
+  { term: "$unset (update)", desc: "Elimina un campo del documento. El valor que le pongas no importa, se usa '' por convención.", section: "upd", nav: "03 · Update Ops" },
+  { term: "$rename", desc: "Renombra un campo en el documento.", section: "upd", nav: "03 · Update Ops" },
+  { term: "$currentDate", desc: "Asigna la fecha y hora actual a un campo.", section: "upd", nav: "03 · Update Ops" },
+  { term: "$pull", desc: "Elimina del array todos los elementos que coincidan con la condición.", section: "arr", nav: "04 · Arrays" },
+  { term: "$pullAll", desc: "Elimina del array todos los valores de la lista dada.", section: "arr", nav: "04 · Arrays" },
+  { term: "$pop", desc: "Elimina el primer (-1) o último (1) elemento del array.", section: "arr", nav: "04 · Arrays" },
+  { term: "$all", desc: "Busca documentos donde el array contenga TODOS los elementos dados (sin importar orden).", section: "query", nav: "02 · Consultas" },
+  { term: "$elemMatch", desc: "Busca documentos donde al menos UN elemento del array cumpla TODAS las condiciones dadas.", section: "arr", nav: "04 · Arrays" },
+  { term: "$gt / $gte / $lt / $lte", desc: "$gt = mayor que. $gte = mayor o igual. $lt = menor que. $lte = menor o igual.", section: "query", nav: "02 · Consultas" },
+  { term: "$in", desc: "El campo está en la lista de valores dados. Opuesto: $nin.", section: "query", nav: "02 · Consultas" },
+  { term: "$nin", desc: "El campo NO está en la lista. Opuesto de $in.", section: "query", nav: "02 · Consultas" },
+  { term: "$ne", desc: "Diferente de (not equal). Busca documentos donde el campo NO sea el valor dado.", section: "query", nav: "02 · Consultas" },
+  { term: "$exists", desc: "Verifica si un campo existe (true) o no existe (false) en el documento.", section: "query", nav: "02 · Consultas" },
+  { term: "$type", desc: "Filtra por tipo BSON del campo: string, int, double, bool, date, objectId, array, null.", section: "query", nav: "02 · Consultas" },
+  { term: "$regex", desc: "Búsqueda con expresión regular. Opción i = case insensitive. Ejemplo: /^M/i", section: "query", nav: "02 · Consultas" },
+  { term: "$and", desc: "Todas las condiciones deben cumplirse. Implícito cuando pones múltiples campos en el filtro.", section: "query", nav: "02 · Consultas" },
+  { term: "$or", desc: "Al menos una condición debe cumplirse. Recibe un array de condiciones.", section: "query", nav: "02 · Consultas" },
+  { term: "$nor", desc: "Ninguna de las condiciones debe cumplirse.", section: "query", nav: "02 · Consultas" },
+  { term: "$not", desc: "Niega una expresión. Ej: { precio: { $not: { $gt: 500 } } }", section: "query", nav: "02 · Consultas" },
+  { term: "índice de texto", desc: "Permite búsqueda full-text con $text. Solo 1 por colección, cubre múltiples campos. Soporta pesos y score de relevancia.", section: "idx", nav: "09 · Índices" },
+  { term: "índice de arreglos", desc: "Multikey index: MongoDB lo crea automáticamente cuando el campo indexado es un array. Indexa cada elemento.", section: "idx", nav: "09 · Índices" },
+  { term: "unique index", desc: "Garantiza que no haya dos documentos con el mismo valor en el campo indexado. Error E11000 si se viola.", section: "idx", nav: "09 · Índices" },
+  { term: "índice de rango", desc: "Índice normal (1/-1). Acelera consultas con $gt, $lt, $between. El más común. Soporte para sort eficiente.", section: "idx", nav: "09 · Índices" },
+  { term: "índice geoespacial", desc: "2dsphere para coordenadas GPS reales. Permite $near, $geoWithin, $centerSphere. Requiere GeoJSON.", section: "idx", nav: "09 · Índices" },
+  { term: "createIndex", desc: "Crea un índice en la colección. Acepta opciones: unique, sparse, name, expireAfterSeconds.", section: "idx", nav: "09 · Índices" },
+  { term: "explain", desc: "Analiza el plan de ejecución de una query. COLLSCAN = sin índice (malo). IXSCAN = con índice (bueno).", section: "idx", nav: "09 · Índices" },
+  { term: "TTL index", desc: "expireAfterSeconds: elimina documentos automáticamente después de N segundos desde el campo de fecha.", section: "idx", nav: "09 · Índices" },
+  { term: "$jsonSchema", desc: "Define reglas de validación para los documentos de una colección. Soporta required, bsonType, minimum, pattern, enum.", section: "schema", nav: "10 · Schema" },
+  { term: "upsert", desc: "En updateOne/updateMany: si no encuentra el documento, lo CREA. Si lo encuentra, lo actualiza.", section: "crud", nav: "01 · CRUD" },
+  { term: "$dateDiff", desc: "Calcula la diferencia entre dos fechas en una unidad dada: day, month, year, hour, minute, second.", section: "clase", nav: "11b · Clase" },
+  { term: "ISODate", desc: "Formato de fecha en MongoDB. Ejemplo: ISODate('2024-01-01T00:00:00Z'). También puedes usar new Date().", section: "query", nav: "02 · Consultas" },
+  { term: "$text", desc: "Busca texto completo. Requiere índice de texto. Soporta frases exactas con comillas y exclusiones con -.", section: "idx", nav: "09 · Índices" },
+  { term: "$near", desc: "Encuentra documentos cercanos a un punto geoespacial. Requiere índice 2dsphere.", section: "idx", nav: "09 · Índices" },
+  { term: "transacciones", desc: "Operaciones ACID multi-documento. Requiere Replica Set. startTransaction() → operaciones → commitTransaction() o abortTransaction().", section: "misc", nav: "11 · Extra" },
+  { term: "dot notation", desc: "Acceder a campos anidados con punto: 'specs.ram', 'tags.0'. Funciona en filtros, proyecciones y updates.", section: "query", nav: "02 · Consultas" },
+  { term: "$dateToString", desc: "Convierte una fecha a string con formato personalizado. Ej: '%Y-%m-%d' → '2024-03-15'.", section: "exprs", nav: "08 · Expresiones" },
+  { term: "$$ROOT", desc: "Variable de sistema: referencia al documento completo en el pipeline. Útil en $mergeObjects.", section: "stages", nav: "06 · Todos los Stages" },
+  { term: "$$NOW", desc: "Variable de sistema: fecha y hora actual dentro del pipeline.", section: "exprs", nav: "08 · Expresiones" },
+  { term: "$concatArrays", desc: "Une múltiples arrays en uno solo. Útil para combinar todos los días de la semana en un solo array.", section: "exprs", nav: "08 · Expresiones" },
+  { term: "$setWindowFields", desc: "Cálculos tipo SQL OVER(): rankings, acumulados, diferencia con anterior. No colapsa documentos como $group.", section: "misc", nav: "11 · Extra" },
+  { term: "$dateDiff", desc: "Calcula la diferencia entre dos fechas: day, month, year, hour. Se usa dentro de $addFields.", section: "misc", nav: "11 · Extra" },
+  { term: "errores comunes", desc: "Paréntesis en vez de llaves en operadores, = en vez de : en filtros, $or con {} en vez de [], typos como insertMeny, case-sensitive en campos.", section: "clase", nav: "11b · Clase" },
+  { term: "consultas colegio", desc: "Ejercicios con arrays de materias por día: $unwind + $group para contar materias, $concatArrays para unir días, $facet para múltiples resultados.", section: "clase", nav: "11b · Clase" },
+  { term: "consultas biblioteca", desc: "Libros no prestados, libro más prestado, promedio páginas por idioma, $lookup de usuario+libro en préstamos.", section: "clase", nav: "11b · Clase" },
+];
+
+function openSearch() {
+  document.getElementById('search-overlay').style.display = 'block';
+  setTimeout(() => document.getElementById('search-input').focus(), 50);
+  doSearch('');
+}
+function closeSearch(e) {
+  if (e && e.target !== document.getElementById('search-overlay')) return;
+  document.getElementById('search-overlay').style.display = 'none';
+  document.getElementById('search-input').value = '';
+}
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
+  if (e.key === 'Escape') { document.getElementById('search-overlay').style.display = 'none'; }
+});
+
+function doSearch(q) {
+  const box = document.getElementById('search-results');
+  const query = q.trim().toLowerCase();
+  const results = query.length === 0
+    ? SEARCH_DB.slice(0, 12)
+    : SEARCH_DB.filter(r =>
+        r.term.toLowerCase().includes(query) ||
+        r.desc.toLowerCase().includes(query)
+      ).slice(0, 15);
+
+  if (results.length === 0) {
+    box.innerHTML = '<div style="text-align:center;color:var(--dim);padding:40px;font-family:JetBrains Mono,monospace;font-size:13px">Sin resultados para "' + q + '"</div>';
+    return;
+  }
+  box.innerHTML = results.map(r => {
+    const hi = (txt) => query
+      ? txt.replace(new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi'), '<mark style="background:rgba(0,229,160,0.25);color:var(--green);border-radius:2px">$1</mark>')
+      : txt;
+    return '<div onclick="goSearch(\'' + r.section + '\',this)" style="background:#0e1625;border:1px solid #1c2d45;border-radius:8px;padding:14px 18px;margin-bottom:8px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor=\'var(--green)\'" onmouseout="this.style.borderColor=\'#1c2d45\'">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+      '<span style="font-family:JetBrains Mono,monospace;font-size:13px;font-weight:700;color:var(--orange)">' + hi(r.term) + '</span>' +
+      '<span style="font-family:JetBrains Mono,monospace;font-size:10px;background:rgba(0,229,160,.08);color:var(--green);border:1px solid rgba(0,229,160,.2);padding:2px 8px;border-radius:3px">' + r.nav + '</span>' +
+      '</div>' +
+      '<div style="color:#8899b0;font-size:13px;line-height:1.55">' + hi(r.desc) + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+function goSearch(sectionId, el) {
+  const btns = document.querySelectorAll('.nb');
+  const secs = document.querySelectorAll('.sec');
+  secs.forEach(s => s.classList.remove('on'));
+  btns.forEach(b => b.classList.remove('on'));
+  const target = document.getElementById('sec-' + sectionId);
+  if (target) {
+    target.classList.add('on');
+    const navLabel = el.querySelector('span:last-of-type')?.textContent || '';
+    btns.forEach(b => { if (b.textContent.trim() === navLabel.trim()) b.classList.add('on'); });
+  }
+  document.getElementById('search-overlay').style.display = 'none';
+  document.getElementById('search-input').value = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 </script>
-</body>
-</html>
