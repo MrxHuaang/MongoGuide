@@ -1,0 +1,2535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MongoDB — Guía Completa</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #080c14;
+  --surf:     #0e1625;
+  --surf2:    #141f30;
+  --border:   #1c2d45;
+  --green:    #00e5a0;
+  --glow:     rgba(0,229,160,0.12);
+  --orange:   #ff7043;
+  --blue:     #40a9ff;
+  --purple:   #b06aff;
+  --yellow:   #ffd740;
+  --red:      #ff5252;
+  --cyan:     #26c6da;
+  --text:     #dce8f5;
+  --dim:      #7a93b0;
+  --code-bg:  #050912;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+
+/* HERO */
+.hero {
+  padding: 56px 48px 40px;
+  border-bottom: 1px solid var(--border);
+  background: radial-gradient(ellipse 800px 400px at 0% 0%, rgba(0,229,160,0.06) 0%, transparent 70%);
+  position: relative;
+}
+.hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: var(--green);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  opacity: .8;
+}
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(40px, 7vw, 80px);
+  font-weight: 800;
+  line-height: .95;
+  background: linear-gradient(120deg, #ffffff 20%, var(--green) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 18px;
+}
+.hero p {
+  color: var(--dim);
+  font-size: 15px;
+  max-width: 560px;
+  line-height: 1.7;
+}
+.pill-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; }
+.pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  padding: 4px 12px;
+  border-radius: 3px;
+  border: 1px solid rgba(0,229,160,.2);
+  background: rgba(0,229,160,.06);
+  color: var(--green);
+}
+
+/* NAV */
+.nav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(8,12,20,.97);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 32px;
+}
+.nav::-webkit-scrollbar { display:none; }
+.nb {
+  background: none; border: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--dim);
+  padding: 14px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+  letter-spacing: .5px;
+}
+.nb:hover { color: var(--text); }
+.nb.on { color: var(--green); border-bottom-color: var(--green); }
+
+/* LAYOUT */
+.wrap { max-width: 1060px; margin: 0 auto; padding: 44px 40px; }
+.sec { display: none; }
+.sec.on { display: block; }
+
+/* SECTION TITLE */
+.sec-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--green);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.sec-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 34px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.sec-desc { color: var(--dim); font-size: 14px; line-height: 1.7; margin-bottom: 36px; }
+
+/* CARD */
+.card {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px;
+  margin-bottom: 22px;
+  position: relative;
+  overflow: hidden;
+}
+.card::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, var(--green) 0%, transparent 60%);
+}
+.card.c-orange::after { background: linear-gradient(90deg, var(--orange) 0%, transparent 60%); }
+.card.c-blue::after   { background: linear-gradient(90deg, var(--blue)   0%, transparent 60%); }
+.card.c-purple::after { background: linear-gradient(90deg, var(--purple)  0%, transparent 60%); }
+.card.c-yellow::after { background: linear-gradient(90deg, var(--yellow)  0%, transparent 60%); }
+.card.c-red::after    { background: linear-gradient(90deg, var(--red)     0%, transparent 60%); }
+.card.c-cyan::after   { background: linear-gradient(90deg, var(--cyan)    0%, transparent 60%); }
+
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px; font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 9px;
+}
+.card-sub { color: var(--dim); font-size: 13px; margin-bottom: 18px; line-height: 1.55; }
+
+/* CODE — THE FIX: pre preserves all whitespace */
+.cb-wrap {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.cb-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,.02);
+}
+.cb-lang {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--dim); text-transform: uppercase;
+}
+.cb-copy {
+  background: rgba(0,229,160,.08);
+  border: 1px solid rgba(0,229,160,.2);
+  color: var(--green);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 1px;
+  padding: 3px 10px; border-radius: 3px;
+  cursor: pointer; transition: all .2s;
+}
+.cb-copy:hover { background: rgba(0,229,160,.18); }
+.cb-copy.done  { color: #fff; background: rgba(0,229,160,.25); }
+/* THE KEY: pre with overflow, no wrapping */
+.cb-wrap pre {
+  margin: 0;
+  padding: 18px 20px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: var(--text);
+  white-space: pre;          /* preserve ALL whitespace & newlines */
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+/* SYNTAX */
+.k  { color: var(--purple); }           /* keyword */
+.s  { color: var(--yellow); }           /* string */
+.n  { color: var(--orange); }           /* number */
+.op { color: var(--green);  font-weight:500; }  /* operator */
+.cm { color: #3d5470; font-style:italic; }  /* comment */
+.fn { color: var(--blue);   }           /* function */
+.kv { color: var(--text);   }           /* key name */
+.b  { color: var(--cyan);   }           /* boolean */
+.re { color: var(--red);    }           /* regex */
+
+/* TABLES */
+.tbl { width:100%; border-collapse:collapse; font-size:13px; }
+.tbl th {
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px; letter-spacing:2px; text-transform:uppercase;
+  color: var(--green); padding: 10px 14px;
+  background: rgba(0,229,160,.06);
+  border-bottom: 1px solid var(--border);
+  text-align:left;
+}
+.tbl td { padding:10px 14px; border-bottom:1px solid rgba(28,45,69,.5); vertical-align:top; }
+.tbl tr:last-child td { border-bottom:none; }
+.tbl td:first-child { font-family:'JetBrains Mono',monospace; color:var(--orange); white-space:nowrap; font-size:12px; }
+.tbl td:nth-child(2) { color:var(--dim); }
+.tbl td:last-child  { font-family:'JetBrains Mono',monospace; color:var(--blue); font-size:11px; }
+.tbl-wrap { background:var(--surf); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:22px; }
+
+/* ALERT */
+.alert {
+  padding: 13px 16px;
+  border-radius: 8px; font-size: 13px;
+  margin-bottom: 16px;
+  display: flex; gap: 10px;
+  line-height: 1.55;
+}
+.a-tip  { background:rgba(0,229,160,.05); border:1px solid rgba(0,229,160,.2); color:#9cf5d4; }
+.a-warn { background:rgba(255,215,64,.05); border:1px solid rgba(255,215,64,.2); color:#ffe080; }
+.a-info { background:rgba(64,169,255,.05); border:1px solid rgba(64,169,255,.2); color:#90caff; }
+.a-err  { background:rgba(255,82,82,.05);  border:1px solid rgba(255,82,82,.2);  color:#ff9090; }
+
+/* GRID */
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.g3 { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+@media(max-width:750px){ .g2,.g3{ grid-template-columns:1fr; } }
+
+/* PIPELINE VIZ */
+.pipe-stage {
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 18px;
+  margin-bottom: 4px;
+}
+.pipe-arrow { text-align:center; color:var(--green); font-size:18px; line-height:1.4; }
+.stage-name { font-family:'JetBrains Mono',monospace; color:var(--orange); font-size:12px; font-weight:700; margin-bottom:4px; }
+.stage-desc { color:var(--dim); font-size:12px; line-height:1.5; }
+
+/* QUIZ */
+.qcard { background:var(--surf); border:1px solid var(--border); border-radius:10px; padding:24px; margin-bottom:18px; }
+.qtxt  { font-size:14px; font-weight:500; margin-bottom:16px; line-height:1.5; }
+.qnum  { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--green); background:var(--glow); border:1px solid rgba(0,229,160,.2); padding:2px 8px; border-radius:3px; margin-right:10px; }
+.qopt  {
+  background:var(--surf2); border:1px solid var(--border);
+  border-radius:7px; padding:11px 16px; margin-bottom:8px;
+  cursor:pointer; font-size:13px; font-family:'JetBrains Mono',monospace;
+  transition:all .15s; color:var(--dim);
+}
+.qopt:hover:not(.locked) { border-color:var(--blue); color:var(--text); }
+.qopt.ok   { border-color:var(--green); background:rgba(0,229,160,.08); color:var(--green); }
+.qopt.bad  { border-color:var(--red);   background:rgba(255,82,82,.08);  color:var(--red);   }
+.qopt.locked { cursor:default; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+hr { border:none; border-top:1px solid var(--border); margin:30px 0; }
+.ic { background:rgba(0,229,160,.08); color:var(--green); font-family:'JetBrains Mono',monospace; font-size:11px; padding:2px 7px; border-radius:3px; border:1px solid rgba(0,229,160,.15); }
+b { color:var(--text); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div style="
+    font-family:'JetBrains Mono',monospace;
+    font-size:clamp(5px,1.1vw,11.5px);
+    line-height:1.25;
+    color:var(--green);
+    opacity:0.85;
+    margin-bottom:28px;
+    white-space:pre;
+    overflow-x:auto;
+    text-shadow: 0 0 18px rgba(0,229,160,0.45);
+    letter-spacing:0;
+  ">     ██╗██╗   ██╗ █████╗ ███╗   ██╗     ██╗ ██████╗ ███████╗███████╗
+     ██║██║   ██║██╔══██╗████╗  ██║     ██║██╔═══██╗██╔════╝██╔════╝
+     ██║██║   ██║███████║██╔██╗ ██║     ██║██║   ██║███████╗█████╗  
+██   ██║██║   ██║██╔══██║██║╚██╗██║██   ██║██║   ██║╚════██║██╔══╝  
+╚█████╔╝╚██████╔╝██║  ██║██║ ╚████║╚█████╔╝╚██████╔╝███████║███████╗
+ ╚════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝ ╚════╝  ╚═════╝ ╚══════╝╚══════╝
+                                                                       
+██████╗  █████╗ ███╗   ██╗████████╗ ██████╗      ██╗ █████╗ 
+██╔══██╗██╔══██╗████╗  ██║╚══██╔══╝██╔═══██╗     ██║██╔══██╗
+██████╔╝███████║██╔██╗ ██║   ██║   ██║   ██║     ██║███████║
+██╔═══╝ ██╔══██║██║╚██╗██║   ██║   ██║   ██║██   ██║██╔══██║
+██║     ██║  ██║██║ ╚████║   ██║   ╚██████╔╝╚█████╔╝██║  ██║
+╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝    ╚═════╝  ╚════╝ ╚═╝  ╚═╝</div>
+
+  <div style="
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--dim);
+    margin-bottom:14px;
+    letter-spacing:1.5px;
+  ">// Apuntes de <span style="color:var(--green);font-weight:700">Juan José Pantoja</span> — Taller Evaluativo MongoDB</div>
+
+  <div class="hero-eyebrow">// Guía de combate — Consultas · Pipeline · Índices · Schema</div>
+  <h1>MongoDB<br>De Cero<br>a Todo</h1>
+  <p>CRUD completo · Operadores · Aggregation Pipeline · $lookup · Índices · Schema Validation · Transacciones y más. Con código formateado y listo para probar.</p>
+  <div class="pill-row">
+    <span class="pill">CRUD</span><span class="pill">OPERADORES</span><span class="pill">PIPELINE</span>
+    <span class="pill">$LOOKUP</span><span class="pill">ÍNDICES</span><span class="pill">VALIDATION</span>
+    <span class="pill">ARRAYS</span><span class="pill">REGEX</span><span class="pill">FECHAS</span><span class="pill">TRANSACCIONES</span>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nb on"  onclick="go('setup',this)">00 · Setup</button>
+  <button class="nb"     onclick="go('crud',this)">01 · CRUD</button>
+  <button class="nb"     onclick="go('query',this)">02 · Consultas</button>
+  <button class="nb"     onclick="go('upd',this)">03 · Update Ops</button>
+  <button class="nb"     onclick="go('arr',this)">04 · Arrays</button>
+  <button class="nb"     onclick="go('pipe',this)">05 · Pipeline Intro</button>
+  <button class="nb"     onclick="go('stages',this)">06 · Todos los Stages</button>
+  <button class="nb"     onclick="go('lookup',this)">07 · $lookup</button>
+  <button class="nb"     onclick="go('exprs',this)">08 · Expresiones</button>
+  <button class="nb"     onclick="go('idx',this)">09 · Índices</button>
+  <button class="nb"     onclick="go('schema',this)">10 · Schema</button>
+  <button class="nb"     onclick="go('misc',this)">11 · Extra</button>
+  <button class="nb"     onclick="go('ref',this)">12 · Referencia</button>
+  <button class="nb"     onclick="go('quiz',this)">13 · Quiz</button>
+</nav>
+
+<div class="wrap">
+
+<!-- ════════════════════ 00 SETUP ════════════════════ -->
+<div id="sec-setup" class="sec on">
+  <div class="sec-label">00 — Fundamentos</div>
+  <h2 class="sec-title">Setup y datos de práctica</h2>
+  <p class="sec-desc">Conceptos clave + la base de datos de ejemplo que usaremos en toda la guía.</p>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">🗄️ Jerarquía MongoDB</div>
+      <div class="card-sub">MongoDB → Database → Collection → Document (≈ fila JSON)</div>
+      <div class="cb-wrap">
+        <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+        <pre><span class="cm">// Seleccionar / crear una database</span>
+<span class="k">use</span> miTienda
+
+<span class="cm">// Ver todas las databases</span>
+<span class="fn">show</span> dbs
+
+<span class="cm">// Ver collections de la db actual</span>
+<span class="fn">show</span> collections
+
+<span class="cm">// Nombre de la db actual</span>
+<span class="fn">db</span>.getName()
+
+<span class="cm">// Stats de la db</span>
+<span class="fn">db</span>.stats()
+
+<span class="cm">// Eliminar la db actual (¡cuidado!)</span>
+<span class="fn">db</span>.dropDatabase()</pre>
+      </div>
+    </div>
+
+    <div class="card c-blue">
+      <div class="card-title">📄 Anatomía de un documento</div>
+      <div class="card-sub">Un documento = un objeto JSON/BSON. Puede contener campos anidados y arrays.</div>
+      <div class="cb-wrap">
+        <div class="cb-header"><span class="cb-lang">bson</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+        <pre>{
+  <span class="kv">"_id"</span>: <span class="fn">ObjectId</span>(<span class="s">"64abc123..."</span>),  <span class="cm">// clave primaria auto</span>
+  <span class="kv">"nombre"</span>: <span class="s">"Laptop Pro"</span>,
+  <span class="kv">"precio"</span>: <span class="n">1299.99</span>,
+  <span class="kv">"stock"</span>: <span class="n">50</span>,
+  <span class="kv">"activo"</span>: <span class="b">true</span>,
+  <span class="kv">"tags"</span>: [<span class="s">"tech"</span>, <span class="s">"oferta"</span>],   <span class="cm">// array</span>
+  <span class="kv">"specs"</span>: {                         <span class="cm">// objeto anidado</span>
+    <span class="kv">"ram"</span>: <span class="s">"16GB"</span>,
+    <span class="kv">"cpu"</span>: <span class="s">"Intel i7"</span>
+  },
+  <span class="kv">"creado"</span>: <span class="fn">ISODate</span>(<span class="s">"2024-01-01"</span>)
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card c-purple">
+    <div class="card-title">🌱 Base de datos de práctica — pega esto primero</div>
+    <div class="card-sub">Ejecuta todo esto en tu shell de MongoDB. Estas colecciones son las que usaremos en todos los ejemplos.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="k">use</span> tienda
+
+<span class="cm">// ─── PRODUCTOS ───────────────────────────────</span>
+<span class="fn">db</span>.productos.insertMany([
+  {
+    nombre: <span class="s">"Laptop Pro"</span>,
+    precio: <span class="n">1299</span>,
+    stock: <span class="n">50</span>,
+    categoria: <span class="s">"tecnologia"</span>,
+    tags: [<span class="s">"laptop"</span>, <span class="s">"oferta"</span>],
+    rating: <span class="n">4.8</span>,
+    activo: <span class="b">true</span>
+  },
+  {
+    nombre: <span class="s">"Mouse Inalámbrico"</span>,
+    precio: <span class="n">35</span>,
+    stock: <span class="n">200</span>,
+    categoria: <span class="s">"perifericos"</span>,
+    tags: [<span class="s">"mouse"</span>, <span class="s">"inalambrico"</span>],
+    rating: <span class="n">4.2</span>,
+    activo: <span class="b">true</span>
+  },
+  {
+    nombre: <span class="s">"Teclado Mecánico"</span>,
+    precio: <span class="n">120</span>,
+    stock: <span class="n">75</span>,
+    categoria: <span class="s">"perifericos"</span>,
+    tags: [<span class="s">"teclado"</span>, <span class="s">"mecanico"</span>],
+    rating: <span class="n">4.6</span>,
+    activo: <span class="b">true</span>
+  },
+  {
+    nombre: <span class="s">"Monitor 4K"</span>,
+    precio: <span class="n">850</span>,
+    stock: <span class="n">20</span>,
+    categoria: <span class="s">"tecnologia"</span>,
+    tags: [<span class="s">"monitor"</span>, <span class="s">"4k"</span>],
+    rating: <span class="n">4.9</span>,
+    activo: <span class="b">true</span>
+  },
+  {
+    nombre: <span class="s">"Auriculares BT"</span>,
+    precio: <span class="n">199</span>,
+    stock: <span class="n">0</span>,
+    categoria: <span class="s">"audio"</span>,
+    tags: [<span class="s">"audio"</span>, <span class="s">"bluetooth"</span>],
+    rating: <span class="n">3.8</span>,
+    activo: <span class="b">false</span>
+  },
+  {
+    nombre: <span class="s">"Webcam HD"</span>,
+    precio: <span class="n">79</span>,
+    stock: <span class="n">110</span>,
+    categoria: <span class="s">"perifericos"</span>,
+    tags: [<span class="s">"camara"</span>, <span class="s">"streaming"</span>],
+    rating: <span class="n">4.1</span>,
+    activo: <span class="b">true</span>
+  },
+  {
+    nombre: <span class="s">"SSD 1TB"</span>,
+    precio: <span class="n">95</span>,
+    stock: <span class="n">300</span>,
+    categoria: <span class="s">"almacenamiento"</span>,
+    tags: [<span class="s">"ssd"</span>, <span class="s">"rapido"</span>],
+    rating: <span class="n">4.7</span>,
+    activo: <span class="b">true</span>
+  },
+  {
+    nombre: <span class="s">"Hub USB-C"</span>,
+    precio: <span class="n">45</span>,
+    stock: <span class="n">150</span>,
+    categoria: <span class="s">"accesorios"</span>,
+    tags: [<span class="s">"usb"</span>, <span class="s">"hub"</span>],
+    rating: <span class="n">4.0</span>,
+    activo: <span class="b">true</span>
+  }
+])
+
+<span class="cm">// ─── CLIENTES ────────────────────────────────</span>
+<span class="fn">db</span>.clientes.insertMany([
+  {
+    nombre: <span class="s">"Ana García"</span>,
+    email: <span class="s">"ana@email.com"</span>,
+    edad: <span class="n">28</span>,
+    ciudad: <span class="s">"Madrid"</span>,
+    compras: <span class="n">5</span>,
+    total_gastado: <span class="n">2340</span>
+  },
+  {
+    nombre: <span class="s">"Carlos López"</span>,
+    email: <span class="s">"carlos@email.com"</span>,
+    edad: <span class="n">35</span>,
+    ciudad: <span class="s">"Barcelona"</span>,
+    compras: <span class="n">12</span>,
+    total_gastado: <span class="n">8900</span>
+  },
+  {
+    nombre: <span class="s">"María Soto"</span>,
+    email: <span class="s">"maria@email.com"</span>,
+    edad: <span class="n">22</span>,
+    ciudad: <span class="s">"Madrid"</span>,
+    compras: <span class="n">2</span>,
+    total_gastado: <span class="n">450</span>
+  },
+  {
+    nombre: <span class="s">"Pedro Ruiz"</span>,
+    email: <span class="s">"pedro@email.com"</span>,
+    edad: <span class="n">45</span>,
+    ciudad: <span class="s">"Valencia"</span>,
+    compras: <span class="n">8</span>,
+    total_gastado: <span class="n">4200</span>
+  },
+  {
+    nombre: <span class="s">"Laura Jiménez"</span>,
+    email: <span class="s">"laura@email.com"</span>,
+    edad: <span class="n">31</span>,
+    ciudad: <span class="s">"Sevilla"</span>,
+    compras: <span class="n">3</span>,
+    total_gastado: <span class="n">990</span>
+  }
+])
+
+<span class="cm">// ─── PEDIDOS ─────────────────────────────────</span>
+<span class="fn">db</span>.pedidos.insertMany([
+  {
+    cliente_id: <span class="s">"ana@email.com"</span>,
+    producto: <span class="s">"Laptop Pro"</span>,
+    cantidad: <span class="n">1</span>,
+    total: <span class="n">1299</span>,
+    estado: <span class="s">"entregado"</span>,
+    fecha: <span class="k">new</span> <span class="fn">Date</span>(<span class="s">"2024-01-15"</span>)
+  },
+  {
+    cliente_id: <span class="s">"carlos@email.com"</span>,
+    producto: <span class="s">"Monitor 4K"</span>,
+    cantidad: <span class="n">2</span>,
+    total: <span class="n">1700</span>,
+    estado: <span class="s">"entregado"</span>,
+    fecha: <span class="k">new</span> <span class="fn">Date</span>(<span class="s">"2024-02-01"</span>)
+  },
+  {
+    cliente_id: <span class="s">"maria@email.com"</span>,
+    producto: <span class="s">"Mouse Inalámbrico"</span>,
+    cantidad: <span class="n">1</span>,
+    total: <span class="n">35</span>,
+    estado: <span class="s">"pendiente"</span>,
+    fecha: <span class="k">new</span> <span class="fn">Date</span>(<span class="s">"2024-03-10"</span>)
+  },
+  {
+    cliente_id: <span class="s">"pedro@email.com"</span>,
+    producto: <span class="s">"SSD 1TB"</span>,
+    cantidad: <span class="n">3</span>,
+    total: <span class="n">285</span>,
+    estado: <span class="s">"enviado"</span>,
+    fecha: <span class="k">new</span> <span class="fn">Date</span>(<span class="s">"2024-03-15"</span>)
+  },
+  {
+    cliente_id: <span class="s">"ana@email.com"</span>,
+    producto: <span class="s">"Teclado Mecánico"</span>,
+    cantidad: <span class="n">1</span>,
+    total: <span class="n">120</span>,
+    estado: <span class="s">"entregado"</span>,
+    fecha: <span class="k">new</span> <span class="fn">Date</span>(<span class="s">"2024-03-20"</span>)
+  },
+  {
+    cliente_id: <span class="s">"laura@email.com"</span>,
+    producto: <span class="s">"Webcam HD"</span>,
+    cantidad: <span class="n">1</span>,
+    total: <span class="n">79</span>,
+    estado: <span class="s">"cancelado"</span>,
+    fecha: <span class="k">new</span> <span class="fn">Date</span>(<span class="s">"2024-04-01"</span>)
+  },
+  {
+    cliente_id: <span class="s">"carlos@email.com"</span>,
+    producto: <span class="s">"Laptop Pro"</span>,
+    cantidad: <span class="n">1</span>,
+    total: <span class="n">1299</span>,
+    estado: <span class="s">"enviado"</span>,
+    fecha: <span class="k">new</span> <span class="fn">Date</span>(<span class="s">"2024-04-10"</span>)
+  }
+])</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ 01 CRUD ════════════════════ -->
+<div id="sec-crud" class="sec">
+  <div class="sec-label">01 — Operaciones Básicas</div>
+  <h2 class="sec-title">CRUD Completo</h2>
+  <p class="sec-desc">Create, Read, Update, Delete — las cuatro operaciones fundamentales.</p>
+
+  <div class="card">
+    <div class="card-title">➕ INSERT — Crear documentos</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// ── insertOne ─────────────────────────────────</span>
+<span class="cm">// Inserta exactamente UN documento</span>
+<span class="fn">db</span>.productos.insertOne({
+  nombre: <span class="s">"Smartphone X"</span>,
+  precio: <span class="n">799</span>,
+  stock: <span class="n">100</span>,
+  categoria: <span class="s">"tecnologia"</span>
+})
+<span class="cm">// Retorna: { acknowledged: true, insertedId: ObjectId(...) }</span>
+
+<span class="cm">// ── insertMany ────────────────────────────────</span>
+<span class="cm">// Inserta un array de documentos</span>
+<span class="fn">db</span>.productos.insertMany([
+  { nombre: <span class="s">"Cable HDMI"</span>,   precio: <span class="n">12</span>, stock: <span class="n">500</span> },
+  { nombre: <span class="s">"Cargador USB"</span>, precio: <span class="n">20</span>, stock: <span class="n">300</span> }
+])
+<span class="cm">// Retorna: { acknowledged: true, insertedIds: { 0: ..., 1: ... } }</span>
+
+<span class="cm">// ── insertMany con ordered: false ─────────────</span>
+<span class="cm">// Si uno falla, continúa con los demás (no detiene todo)</span>
+<span class="fn">db</span>.productos.insertMany(
+  [
+    { _id: <span class="n">1</span>, nombre: <span class="s">"A"</span> },
+    { _id: <span class="n">1</span>, nombre: <span class="s">"B"</span> },  <span class="cm">// duplicado, fallará</span>
+    { _id: <span class="n">2</span>, nombre: <span class="s">"C"</span> }   <span class="cm">// este sí se inserta</span>
+  ],
+  { ordered: <span class="b">false</span> }
+)</pre>
+    </div>
+  </div>
+
+  <div class="card c-blue">
+    <div class="card-title">🔍 FIND — Leer documentos</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// ── find (todos) ──────────────────────────────</span>
+<span class="fn">db</span>.productos.find()
+
+<span class="cm">// ── find con filtro ───────────────────────────</span>
+<span class="fn">db</span>.productos.find({ categoria: <span class="s">"perifericos"</span> })
+
+<span class="cm">// ── findOne ───────────────────────────────────</span>
+<span class="cm">// Retorna el primer documento que coincida</span>
+<span class="fn">db</span>.productos.findOne({ nombre: <span class="s">"Mouse Inalámbrico"</span> })
+
+<span class="cm">// ── Proyección (2do argumento) ────────────────</span>
+<span class="cm">// 1 = mostrar | 0 = ocultar</span>
+<span class="fn">db</span>.productos.find(
+  { categoria: <span class="s">"perifericos"</span> },
+  { nombre: <span class="n">1</span>, precio: <span class="n">1</span>, _id: <span class="n">0</span> }
+)
+
+<span class="cm">// ── Métodos encadenables ──────────────────────</span>
+<span class="fn">db</span>.productos.find()
+  .sort({ precio: <span class="op">-1</span> })     <span class="cm">// -1 desc, 1 asc</span>
+  .limit(<span class="n">5</span>)                 <span class="cm">// máx 5 resultados</span>
+  .skip(<span class="n">10</span>)                 <span class="cm">// saltar 10 (paginación)</span>
+  .pretty()                  <span class="cm">// formato bonito (shell)</span>
+
+<span class="cm">// ── Contar ────────────────────────────────────</span>
+<span class="fn">db</span>.productos.countDocuments({ activo: <span class="b">true</span> })
+
+<span class="cm">// Estimación rápida (sin filtro, usa metadatos)</span>
+<span class="fn">db</span>.productos.estimatedDocumentCount()
+
+<span class="cm">// ── Distinct ──────────────────────────────────</span>
+<span class="cm">// Valores únicos de un campo</span>
+<span class="fn">db</span>.productos.distinct(<span class="s">"categoria"</span>)
+<span class="fn">db</span>.productos.distinct(<span class="s">"categoria"</span>, { activo: <span class="b">true</span> })</pre>
+    </div>
+  </div>
+
+  <div class="card c-orange">
+    <div class="card-title">✏️ UPDATE — Actualizar documentos</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// ── updateOne ─────────────────────────────────</span>
+<span class="cm">// Actualiza SOLO el primer documento que coincida</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"Mouse Inalámbrico"</span> },        <span class="cm">// filtro</span>
+  { <span class="op">$set</span>: { precio: <span class="n">40</span>, stock: <span class="n">180</span> } }   <span class="cm">// cambios</span>
+)
+
+<span class="cm">// ── updateMany ────────────────────────────────</span>
+<span class="cm">// Actualiza TODOS los documentos que coincidan</span>
+<span class="fn">db</span>.productos.updateMany(
+  { categoria: <span class="s">"perifericos"</span> },
+  { <span class="op">$set</span>: { activo: <span class="b">true</span> } }
+)
+
+<span class="cm">// ── upsert ────────────────────────────────────</span>
+<span class="cm">// Si no existe: lo CREA. Si existe: lo ACTUALIZA</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"Producto Nuevo"</span> },
+  { <span class="op">$set</span>: { precio: <span class="n">99</span>, stock: <span class="n">10</span> } },
+  { upsert: <span class="b">true</span> }
+)
+
+<span class="cm">// ── replaceOne ────────────────────────────────</span>
+<span class="cm">// Reemplaza el documento COMPLETO (excepto _id)</span>
+<span class="fn">db</span>.productos.replaceOne(
+  { nombre: <span class="s">"Cable HDMI"</span> },
+  {
+    nombre: <span class="s">"Cable HDMI 2.1"</span>,
+    precio: <span class="n">25</span>,
+    stock: <span class="n">50</span>,
+    categoria: <span class="s">"accesorios"</span>
+  }
+)
+
+<span class="cm">// ── findOneAndUpdate ──────────────────────────</span>
+<span class="cm">// Actualiza Y retorna el documento</span>
+<span class="fn">db</span>.productos.findOneAndUpdate(
+  { nombre: <span class="s">"SSD 1TB"</span> },
+  { <span class="op">$inc</span>: { stock: <span class="op">-1</span> } },
+  {
+    returnDocument: <span class="s">"after"</span>,   <span class="cm">// "before" = doc original</span>
+    projection: { nombre: <span class="n">1</span>, stock: <span class="n">1</span> }
+  }
+)
+
+<span class="cm">// ── findOneAndReplace ─────────────────────────</span>
+<span class="fn">db</span>.productos.findOneAndReplace(
+  { nombre: <span class="s">"Hub USB-C"</span> },
+  { nombre: <span class="s">"Hub USB-C Pro"</span>, precio: <span class="n">55</span> },
+  { returnDocument: <span class="s">"after"</span> }
+)</pre>
+    </div>
+  </div>
+
+  <div class="card c-red">
+    <div class="card-title">🗑️ DELETE — Eliminar documentos</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// ── deleteOne ─────────────────────────────────</span>
+<span class="cm">// Elimina el primer documento que coincida</span>
+<span class="fn">db</span>.productos.deleteOne({ nombre: <span class="s">"Auriculares BT"</span> })
+
+<span class="cm">// ── deleteMany ────────────────────────────────</span>
+<span class="cm">// Elimina TODOS los que coincidan</span>
+<span class="fn">db</span>.productos.deleteMany({ activo: <span class="b">false</span> })
+
+<span class="cm">// Eliminar TODOS los documentos de la colección</span>
+<span class="fn">db</span>.productos.deleteMany({})
+
+<span class="cm">// ── findOneAndDelete ──────────────────────────</span>
+<span class="cm">// Elimina Y retorna el documento eliminado</span>
+<span class="fn">db</span>.productos.findOneAndDelete(
+  { stock: <span class="n">0</span> },
+  { projection: { nombre: <span class="n">1</span>, precio: <span class="n">1</span> } }
+)
+
+<span class="cm">// ── Eliminar la colección completa ────────────</span>
+<span class="fn">db</span>.productos.drop()
+
+<span class="cm">// ── Eliminar múltiples colecciones ───────────</span>
+<span class="fn">db</span>.clientes.drop()
+<span class="fn">db</span>.pedidos.drop()</pre>
+    </div>
+    <div class="alert a-warn" style="margin-top:14px">⚠️ Siempre verifica tu filtro con <span class="ic">find()</span> antes de ejecutar <span class="ic">deleteMany()</span> o <span class="ic">updateMany()</span>.</div>
+  </div>
+</div>
+
+<!-- ════════════════════ 02 QUERY ════════════════════ -->
+<div id="sec-query" class="sec">
+  <div class="sec-label">02 — Consultas</div>
+  <h2 class="sec-title">Filtros y operadores de query</h2>
+  <p class="sec-desc">Cómo construir filtros precisos para encontrar exactamente lo que necesitas.</p>
+
+  <div class="card">
+    <div class="card-title">⚖️ Comparación</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Igualdad implícita</span>
+<span class="fn">db</span>.productos.find({ categoria: <span class="s">"tecnologia"</span> })
+
+<span class="cm">// $gt  → mayor que (greater than)</span>
+<span class="fn">db</span>.productos.find({ precio: { <span class="op">$gt</span>: <span class="n">100</span> } })
+
+<span class="cm">// $gte → mayor o igual (greater than or equal)</span>
+<span class="fn">db</span>.productos.find({ precio: { <span class="op">$gte</span>: <span class="n">100</span> } })
+
+<span class="cm">// $lt  → menor que (less than)</span>
+<span class="fn">db</span>.productos.find({ precio: { <span class="op">$lt</span>: <span class="n">50</span> } })
+
+<span class="cm">// $lte → menor o igual</span>
+<span class="fn">db</span>.productos.find({ precio: { <span class="op">$lte</span>: <span class="n">50</span> } })
+
+<span class="cm">// $ne  → diferente (not equal)</span>
+<span class="fn">db</span>.productos.find({ categoria: { <span class="op">$ne</span>: <span class="s">"audio"</span> } })
+
+<span class="cm">// Rango combinado: precio entre 50 y 500</span>
+<span class="fn">db</span>.productos.find({
+  precio: { <span class="op">$gte</span>: <span class="n">50</span>, <span class="op">$lte</span>: <span class="n">500</span> }
+})
+
+<span class="cm">// $in  → está en la lista</span>
+<span class="fn">db</span>.productos.find({
+  categoria: { <span class="op">$in</span>: [<span class="s">"tecnologia"</span>, <span class="s">"audio"</span>] }
+})
+
+<span class="cm">// $nin → NO está en la lista (not in)</span>
+<span class="fn">db</span>.productos.find({
+  categoria: { <span class="op">$nin</span>: [<span class="s">"accesorios"</span>, <span class="s">"audio"</span>] }
+})</pre>
+    </div>
+  </div>
+
+  <div class="card c-blue">
+    <div class="card-title">🔗 Lógicos: AND, OR, NOT, NOR</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// AND implícito — múltiples condiciones en el mismo objeto</span>
+<span class="fn">db</span>.productos.find({
+  activo: <span class="b">true</span>,
+  precio: { <span class="op">$lt</span>: <span class="n">100</span> }
+})
+
+<span class="cm">// $and explícito — útil cuando repites el mismo campo</span>
+<span class="fn">db</span>.productos.find({
+  <span class="op">$and</span>: [
+    { activo: <span class="b">true</span> },
+    { precio: { <span class="op">$lt</span>: <span class="n">100</span> } }
+  ]
+})
+
+<span class="cm">// $or — cumple al menos una condición</span>
+<span class="fn">db</span>.productos.find({
+  <span class="op">$or</span>: [
+    { categoria: <span class="s">"audio"</span> },
+    { precio: { <span class="op">$gt</span>: <span class="n">1000</span> } }
+  ]
+})
+
+<span class="cm">// $nor — NO cumple ninguna de las condiciones</span>
+<span class="fn">db</span>.productos.find({
+  <span class="op">$nor</span>: [
+    { activo: <span class="b">false</span> },
+    { stock: <span class="n">0</span> }
+  ]
+})
+
+<span class="cm">// $not — niega una expresión</span>
+<span class="fn">db</span>.productos.find({
+  precio: { <span class="op">$not</span>: { <span class="op">$gt</span>: <span class="n">500</span> } }
+})
+
+<span class="cm">// Combinación AND + OR</span>
+<span class="fn">db</span>.productos.find({
+  activo: <span class="b">true</span>,
+  <span class="op">$or</span>: [
+    { categoria: <span class="s">"tecnologia"</span> },
+    { rating: { <span class="op">$gte</span>: <span class="n">4.5</span> } }
+  ]
+})</pre>
+    </div>
+  </div>
+
+  <div class="card c-purple">
+    <div class="card-title">🔎 Existencia, tipo y Regex</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// $exists — el campo existe / no existe</span>
+<span class="fn">db</span>.productos.find({ rating: { <span class="op">$exists</span>: <span class="b">true</span> } })
+<span class="fn">db</span>.productos.find({ descripcion: { <span class="op">$exists</span>: <span class="b">false</span> } })
+
+<span class="cm">// $type — tipo BSON del campo</span>
+<span class="fn">db</span>.productos.find({ precio: { <span class="op">$type</span>: <span class="s">"double"</span> } })
+<span class="fn">db</span>.productos.find({ nombre: { <span class="op">$type</span>: <span class="s">"string"</span> } })
+<span class="fn">db</span>.productos.find({ tags: { <span class="op">$type</span>: <span class="s">"array"</span> } })
+<span class="cm">// Tipos: string, int, double, bool, date, objectId, array, null, object</span>
+
+<span class="cm">// ── REGEX ─────────────────────────────────────</span>
+<span class="cm">// Forma corta con /patrón/flags</span>
+<span class="fn">db</span>.productos.find({ nombre: <span class="re">/teclado/i</span> })   <span class="cm">// i = case insensitive</span>
+<span class="fn">db</span>.productos.find({ nombre: <span class="re">/^M/</span> })          <span class="cm">// empieza con M</span>
+<span class="fn">db</span>.productos.find({ nombre: <span class="re">/HD$/</span> })          <span class="cm">// termina con HD</span>
+<span class="fn">db</span>.productos.find({ nombre: <span class="re">/\d/</span> })           <span class="cm">// contiene dígito</span>
+
+<span class="cm">// Forma con operador $regex</span>
+<span class="fn">db</span>.productos.find({
+  nombre: { <span class="op">$regex</span>: <span class="s">"pro"</span>, <span class="op">$options</span>: <span class="s">"i"</span> }
+})
+
+<span class="cm">// $where — expresión JS (lento, evitar en producción)</span>
+<span class="fn">db</span>.productos.find({
+  <span class="op">$where</span>: <span class="s">"this.precio > this.stock * 5"</span>
+})</pre>
+    </div>
+  </div>
+
+  <div class="card c-yellow">
+    <div class="card-title">📊 Proyección y métodos de cursor</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Mostrar solo algunos campos (1 = incluir, 0 = excluir)</span>
+<span class="fn">db</span>.productos.find(
+  {},
+  { nombre: <span class="n">1</span>, precio: <span class="n">1</span>, _id: <span class="n">0</span> }
+)
+
+<span class="cm">// Excluir campos específicos</span>
+<span class="fn">db</span>.productos.find(
+  {},
+  { stock: <span class="n">0</span>, tags: <span class="n">0</span>, activo: <span class="n">0</span> }
+)
+
+<span class="cm">// $slice en proyección — primeros/últimos N del array</span>
+<span class="fn">db</span>.productos.find(
+  {},
+  { nombre: <span class="n">1</span>, tags: { <span class="op">$slice</span>: <span class="n">1</span> } }     <span class="cm">// primer tag</span>
+)
+<span class="fn">db</span>.productos.find(
+  {},
+  { tags: { <span class="op">$slice</span>: <span class="op">-1</span> } }               <span class="cm">// último tag</span>
+)
+<span class="fn">db</span>.productos.find(
+  {},
+  { tags: { <span class="op">$slice</span>: [<span class="n">1</span>, <span class="n">2</span>] } }           <span class="cm">// desde índice 1, tomar 2</span>
+)
+
+<span class="cm">// Métodos del cursor</span>
+<span class="fn">db</span>.productos.find()
+  .sort({ precio: <span class="op">-1</span>, nombre: <span class="n">1</span> })         <span class="cm">// múltiples campos</span>
+  .limit(<span class="n">5</span>)
+  .skip(<span class="n">0</span>)
+  .projection({ nombre: <span class="n">1</span>, precio: <span class="n">1</span> })
+
+<span class="cm">// Paginación: página 3 con 5 elementos por página</span>
+<span class="fn">db</span>.productos.find()
+  .sort({ _id: <span class="n">1</span> })
+  .skip((<span class="n">3</span> - <span class="n">1</span>) * <span class="n">5</span>)   <span class="cm">// (página - 1) * tamaño</span>
+  .limit(<span class="n">5</span>)
+
+<span class="cm">// forEach — iterar resultados</span>
+<span class="fn">db</span>.productos.find({ activo: <span class="b">true</span> }).forEach(doc => {
+  print(doc.nombre + <span class="s">": $"</span> + doc.precio)
+})</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ 03 UPDATE OPS ════════════════════ -->
+<div id="sec-upd" class="sec">
+  <div class="sec-label">03 — Operadores de Update</div>
+  <h2 class="sec-title">Todos los operadores de actualización</h2>
+  <p class="sec-desc">Modifica campos sin reescribir el documento completo.</p>
+
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <tr><th>Operador</th><th>Descripción</th><th>Ejemplo de uso</th></tr>
+      <tr><td>$set</td><td>Asigna valor (crea el campo si no existe)</td><td>{ $set: { precio: 99 } }</td></tr>
+      <tr><td>$unset</td><td>Elimina un campo del documento</td><td>{ $unset: { descuento: "" } }</td></tr>
+      <tr><td>$inc</td><td>Incrementa/decrementa un número</td><td>{ $inc: { stock: -5 } }</td></tr>
+      <tr><td>$mul</td><td>Multiplica el valor actual</td><td>{ $mul: { precio: 1.1 } }</td></tr>
+      <tr><td>$min</td><td>Actualiza si el nuevo valor es MENOR</td><td>{ $min: { precio: 50 } }</td></tr>
+      <tr><td>$max</td><td>Actualiza si el nuevo valor es MAYOR</td><td>{ $max: { stock: 200 } }</td></tr>
+      <tr><td>$rename</td><td>Renombra un campo</td><td>{ $rename: { "cat": "categoria" } }</td></tr>
+      <tr><td>$currentDate</td><td>Pone la fecha/hora actual</td><td>{ $currentDate: { updatedAt: true } }</td></tr>
+      <tr><td>$setOnInsert</td><td>Solo asigna valor si el doc se crea (upsert)</td><td>{ $setOnInsert: { creadoEn: new Date() } }</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔧 Ejemplos de update de campos</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Cambiar precio de un producto</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"Laptop Pro"</span> },
+  { <span class="op">$set</span>: { precio: <span class="n">1199</span> } }
+)
+
+<span class="cm">// Reducir stock al vender (inc con negativo)</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"SSD 1TB"</span> },
+  { <span class="op">$inc</span>: { stock: <span class="op">-5</span> } }
+)
+
+<span class="cm">// Varios cambios en una sola operación</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"Monitor 4K"</span> },
+  {
+    <span class="op">$set</span>:         { activo: <span class="b">true</span>, categoria: <span class="s">"tecnologia"</span> },
+    <span class="op">$inc</span>:         { ventas: <span class="n">1</span> },
+    <span class="op">$currentDate</span>: { ultimaVenta: <span class="b">true</span> }
+  }
+)
+
+<span class="cm">// Aplicar descuento del 10% a todos los periféricos</span>
+<span class="fn">db</span>.productos.updateMany(
+  { categoria: <span class="s">"perifericos"</span> },
+  { <span class="op">$mul</span>: { precio: <span class="n">0.9</span> } }
+)
+
+<span class="cm">// Eliminar un campo</span>
+<span class="fn">db</span>.productos.updateMany(
+  {},
+  { <span class="op">$unset</span>: { campo_viejo: <span class="s">""</span> } }
+)
+
+<span class="cm">// Renombrar campo en toda la colección</span>
+<span class="fn">db</span>.productos.updateMany(
+  {},
+  { <span class="op">$rename</span>: { <span class="s">"cat"</span>: <span class="s">"categoria"</span> } }
+)
+
+<span class="cm">// $min: solo actualiza si el nuevo valor es menor</span>
+<span class="cm">// (útil para precio mínimo histórico)</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"SSD 1TB"</span> },
+  { <span class="op">$min</span>: { precio_minimo: <span class="n">80</span> } }   <span class="cm">// solo cambia si 80 < actual</span>
+)
+
+<span class="cm">// Actualizar campo anidado con dot notation</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"Laptop Pro"</span> },
+  { <span class="op">$set</span>: { <span class="s">"specs.ram"</span>: <span class="s">"32GB"</span>, <span class="s">"specs.cpu"</span>: <span class="s">"i9"</span> } }
+)
+
+<span class="cm">// $setOnInsert — solo aplica al crear (upsert)</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"Producto Nuevo"</span> },
+  {
+    <span class="op">$set</span>:         { precio: <span class="n">49</span> },
+    <span class="op">$setOnInsert</span>: { creadoEn: <span class="k">new</span> <span class="fn">Date</span>(), vistas: <span class="n">0</span> }
+  },
+  { upsert: <span class="b">true</span> }
+)</pre>
+    </div>
+  </div>
+
+  <div class="card c-orange">
+    <div class="card-title">📍 Operador posicional $ en arrays</div>
+    <div class="card-sub">Modifica un elemento específico del array sin saber su índice.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// $ (posicional) — modifica el PRIMERO que coincide</span>
+<span class="cm">// El filtro DEBE incluir la condición sobre el array</span>
+<span class="fn">db</span>.productos.updateOne(
+  { tags: <span class="s">"oferta"</span> },
+  { <span class="op">$set</span>: { <span class="s">"tags.$"</span>: <span class="s">"OFERTA"</span> } }
+)
+
+<span class="cm">// $[] — modifica TODOS los elementos del array</span>
+<span class="fn">db</span>.clientes.updateMany(
+  {},
+  { <span class="op">$set</span>: { <span class="s">"historial.$[].activo"</span>: <span class="b">false</span> } }
+)
+
+<span class="cm">// $[identificador] — filtra qué elementos modificar</span>
+<span class="fn">db</span>.pedidos.updateMany(
+  {},
+  { <span class="op">$set</span>: { <span class="s">"items.$[elem].descuento"</span>: <span class="n">0.1</span> } },
+  {
+    arrayFilters: [
+      { <span class="s">"elem.precio"</span>: { <span class="op">$gt</span>: <span class="n">100</span> } }   <span class="cm">// solo items con precio > 100</span>
+    ]
+  }
+)</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ 04 ARRAYS ════════════════════ -->
+<div id="sec-arr" class="sec">
+  <div class="sec-label">04 — Arrays</div>
+  <h2 class="sec-title">Operaciones con arrays</h2>
+  <p class="sec-desc">MongoDB tiene soporte nativo muy poderoso para arrays dentro de documentos.</p>
+
+  <div class="card">
+    <div class="card-title">🔍 Consultar arrays</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Contiene el elemento "oferta"</span>
+<span class="fn">db</span>.productos.find({ tags: <span class="s">"oferta"</span> })
+
+<span class="cm">// Array EXACTAMENTE igual a este (mismo orden)</span>
+<span class="fn">db</span>.productos.find({ tags: [<span class="s">"laptop"</span>, <span class="s">"oferta"</span>] })
+
+<span class="cm">// $all — contiene TODOS estos elementos (cualquier orden)</span>
+<span class="fn">db</span>.productos.find({
+  tags: { <span class="op">$all</span>: [<span class="s">"laptop"</span>, <span class="s">"oferta"</span>] }
+})
+
+<span class="cm">// $size — array de exactamente N elementos</span>
+<span class="fn">db</span>.productos.find({ tags: { <span class="op">$size</span>: <span class="n">2</span> } })
+
+<span class="cm">// Acceder por índice (0-based) con dot notation</span>
+<span class="fn">db</span>.productos.find({ <span class="s">"tags.0"</span>: <span class="s">"laptop"</span> })   <span class="cm">// primer elemento</span>
+<span class="fn">db</span>.productos.find({ <span class="s">"tags.1"</span>: <span class="s">"oferta"</span> })   <span class="cm">// segundo elemento</span>
+
+<span class="cm">// $elemMatch — al menos UN elemento cumple TODAS las condiciones</span>
+<span class="cm">// Útil cuando cada elemento es un objeto</span>
+<span class="fn">db</span>.pedidos.find({
+  items: {
+    <span class="op">$elemMatch</span>: {
+      precio:   { <span class="op">$gt</span>: <span class="n">100</span> },
+      cantidad: { <span class="op">$gte</span>: <span class="n">2</span> }
+    }
+  }
+})</pre>
+    </div>
+  </div>
+
+  <div class="card c-blue">
+    <div class="card-title">➕ Modificar arrays</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// $push — agrega un elemento al final</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"Laptop Pro"</span> },
+  { <span class="op">$push</span>: { tags: <span class="s">"bestseller"</span> } }
+)
+
+<span class="cm">// $push con $each — agrega múltiples</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"Laptop Pro"</span> },
+  {
+    <span class="op">$push</span>: {
+      tags: {
+        <span class="op">$each</span>:  [<span class="s">"premium"</span>, <span class="s">"nuevo"</span>]
+      }
+    }
+  }
+)
+
+<span class="cm">// $push + $each + $sort + $slice</span>
+<span class="cm">// Agrega, ordena y limita el array a los últimos 5</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"Monitor 4K"</span> },
+  {
+    <span class="op">$push</span>: {
+      historial_precios: {
+        <span class="op">$each</span>:  [{ precio: <span class="n">850</span>, fecha: <span class="k">new</span> <span class="fn">Date</span>() }],
+        <span class="op">$sort</span>:  { fecha: <span class="op">-1</span> },
+        <span class="op">$slice</span>: <span class="n">5</span>
+      }
+    }
+  }
+)
+
+<span class="cm">// $addToSet — push SIN duplicar</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"Laptop Pro"</span> },
+  { <span class="op">$addToSet</span>: { tags: <span class="s">"oferta"</span> } }   <span class="cm">// no agrega si ya existe</span>
+)
+
+<span class="cm">// $addToSet con $each — múltiples, sin duplicar</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"Laptop Pro"</span> },
+  {
+    <span class="op">$addToSet</span>: {
+      tags: { <span class="op">$each</span>: [<span class="s">"premium"</span>, <span class="s">"laptop"</span>] }   <span class="cm">// "laptop" ya existe</span>
+    }
+  }
+)
+
+<span class="cm">// $pull — elimina elementos que coincidan con la condición</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"Laptop Pro"</span> },
+  { <span class="op">$pull</span>: { tags: <span class="s">"nuevo"</span> } }
+)
+
+<span class="cm">// $pull con condición sobre objetos del array</span>
+<span class="fn">db</span>.clientes.updateOne(
+  { email: <span class="s">"ana@email.com"</span> },
+  { <span class="op">$pull</span>: { historial: { total: { <span class="op">$lt</span>: <span class="n">50</span> } } } }
+)
+
+<span class="cm">// $pullAll — elimina todos los valores listados</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"Laptop Pro"</span> },
+  { <span class="op">$pullAll</span>: { tags: [<span class="s">"nuevo"</span>, <span class="s">"premium"</span>] } }
+)
+
+<span class="cm">// $pop — elimina primero (-1) o último (1)</span>
+<span class="fn">db</span>.productos.updateOne(
+  { nombre: <span class="s">"Laptop Pro"</span> },
+  { <span class="op">$pop</span>: { tags: <span class="n">1</span> } }    <span class="cm">// -1 = primero | 1 = último</span>
+)</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ 05 PIPELINE INTRO ════════════════════ -->
+<div id="sec-pipe" class="sec">
+  <div class="sec-label">05 — Aggregation Framework</div>
+  <h2 class="sec-title">El Pipeline de Agregación</h2>
+  <p class="sec-desc">El corazón de MongoDB. Documentos fluyen de stage en stage, transformándose en cada paso.</p>
+
+  <div class="alert a-info">ℹ️ <b>¿Qué es?</b> Un array de etapas. Los documentos entran por el primer stage, se transforman, y el resultado pasa al siguiente. Como una cadena de montaje o una pipe de Linux.</div>
+
+  <div class="card">
+    <div class="card-title">🏭 Flujo visual</div>
+    <div style="max-width:480px;margin:0 auto">
+      <div class="pipe-stage"><div class="stage-name">Stage 1: $match</div><div class="stage-desc">Filtra documentos (como WHERE). Solo pasan los que cumplen la condición.</div></div>
+      <div class="pipe-arrow">↓</div>
+      <div class="pipe-stage" style="border-color:var(--blue)"><div class="stage-name" style="color:var(--blue)">Stage 2: $group</div><div class="stage-desc">Agrupa y calcula: suma, conteo, promedio, max, min...</div></div>
+      <div class="pipe-arrow">↓</div>
+      <div class="pipe-stage" style="border-color:var(--purple)"><div class="stage-name" style="color:var(--purple)">Stage 3: $project</div><div class="stage-desc">Da forma: incluye/excluye campos, crea campos calculados.</div></div>
+      <div class="pipe-arrow">↓</div>
+      <div class="pipe-stage" style="border-color:var(--yellow)"><div class="stage-name" style="color:var(--yellow)">Stage 4: $sort</div><div class="stage-desc">Ordena los resultados.</div></div>
+      <div class="pipe-arrow">↓</div>
+      <div class="pipe-stage" style="border-color:var(--orange);margin-bottom:0"><div class="stage-name" style="color:var(--orange)">Stage 5: $limit / $skip</div><div class="stage-desc">Paginación del resultado final.</div></div>
+    </div>
+  </div>
+
+  <div class="card c-blue">
+    <div class="card-title">🚀 Tu primer pipeline completo</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.productos.aggregate([
+
+  <span class="cm">// Stage 1: solo productos activos</span>
+  {
+    <span class="op">$match</span>: { activo: <span class="b">true</span> }
+  },
+
+  <span class="cm">// Stage 2: agrupar por categoría y calcular métricas</span>
+  {
+    <span class="op">$group</span>: {
+      _id:            <span class="s">"$categoria"</span>,
+      totalProductos: { <span class="op">$sum</span>: <span class="n">1</span> },
+      precioPromedio: { <span class="op">$avg</span>: <span class="s">"$precio"</span> },
+      precioMax:      { <span class="op">$max</span>: <span class="s">"$precio"</span> },
+      precioMin:      { <span class="op">$min</span>: <span class="s">"$precio"</span> },
+      stockTotal:     { <span class="op">$sum</span>: <span class="s">"$stock"</span> },
+      ratingPromedio: { <span class="op">$avg</span>: <span class="s">"$rating"</span> }
+    }
+  },
+
+  <span class="cm">// Stage 3: dar formato y renombrar campos</span>
+  {
+    <span class="op">$project</span>: {
+      _id:            <span class="n">0</span>,
+      categoria:      <span class="s">"$_id"</span>,
+      totalProductos: <span class="n">1</span>,
+      stockTotal:     <span class="n">1</span>,
+      precioPromedio: { <span class="op">$round</span>: [<span class="s">"$precioPromedio"</span>, <span class="n">2</span>] },
+      ratingPromedio: { <span class="op">$round</span>: [<span class="s">"$ratingPromedio"</span>, <span class="n">1</span>] }
+    }
+  },
+
+  <span class="cm">// Stage 4: ordenar por stock total descendente</span>
+  {
+    <span class="op">$sort</span>: { stockTotal: <span class="op">-1</span> }
+  }
+
+])</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ 06 STAGES ════════════════════ -->
+<div id="sec-stages" class="sec">
+  <div class="sec-label">06 — Pipeline Stages</div>
+  <h2 class="sec-title">Todos los stages importantes</h2>
+  <p class="sec-desc">Cada stage tiene su función. Aquí están todos los que debes dominar.</p>
+
+  <div class="card">
+    <div class="card-title">📊 $group — Acumuladores</div>
+    <div class="card-sub">Agrupa documentos. <span class="ic">_id</span> define el criterio. <span class="ic">null</span> = agrupa todo junto.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.productos.aggregate([
+  {
+    <span class="op">$group</span>: {
+
+      <span class="cm">// Criterio de agrupación</span>
+      _id: <span class="s">"$categoria"</span>,
+
+      <span class="cm">// _id: null,                        → todo junto</span>
+      <span class="cm">// _id: { cat: "$categoria",          → múltiples campos</span>
+      <span class="cm">//        act: "$activo" },</span>
+
+      <span class="cm">// Acumuladores disponibles:</span>
+      cantidad:      { <span class="op">$sum</span>: <span class="n">1</span> },          <span class="cm">// contar docs</span>
+      sumaPrecios:   { <span class="op">$sum</span>: <span class="s">"$precio"</span> },   <span class="cm">// sumar campo</span>
+      promedio:      { <span class="op">$avg</span>: <span class="s">"$precio"</span> },
+      maximo:        { <span class="op">$max</span>: <span class="s">"$precio"</span> },
+      minimo:        { <span class="op">$min</span>: <span class="s">"$precio"</span> },
+      primerNombre:  { <span class="op">$first</span>: <span class="s">"$nombre"</span> },
+      ultimoNombre:  { <span class="op">$last</span>: <span class="s">"$nombre"</span> },
+      listaNombres:  { <span class="op">$push</span>: <span class="s">"$nombre"</span> },   <span class="cm">// array (con repetidos)</span>
+      setNombres:    { <span class="op">$addToSet</span>: <span class="s">"$nombre"</span> } <span class="cm">// array sin duplicados</span>
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-purple">
+    <div class="card-title">🎨 $project — Proyección avanzada</div>
+    <div class="card-sub">Reestructura documentos. Incluye, excluye y crea campos calculados.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.productos.aggregate([
+  {
+    <span class="op">$project</span>: {
+      <span class="cm">// Incluir / excluir</span>
+      nombre:    <span class="n">1</span>,
+      _id:       <span class="n">0</span>,
+      categoria: <span class="n">1</span>,
+
+      <span class="cm">// Renombrar</span>
+      precio_usd: <span class="s">"$precio"</span>,
+
+      <span class="cm">// Aritmética</span>
+      precio_con_iva: { <span class="op">$multiply</span>: [<span class="s">"$precio"</span>, <span class="n">1.19</span>] },
+      ahorro:         { <span class="op">$subtract</span>: [<span class="s">"$precio"</span>, <span class="s">"$costo"</span>] },
+
+      <span class="cm">// Concatenar strings</span>
+      descripcion: {
+        <span class="op">$concat</span>: [<span class="s">"$nombre"</span>, <span class="s">" — "</span>, <span class="s">"$categoria"</span>]
+      },
+
+      <span class="cm">// Condición ternaria $cond</span>
+      disponible: {
+        <span class="op">$cond</span>: {
+          <span class="k">if</span>:   { <span class="op">$gt</span>: [<span class="s">"$stock"</span>, <span class="n">0</span>] },
+          <span class="k">then</span>: <span class="s">"En stock"</span>,
+          <span class="k">else</span>: <span class="s">"Agotado"</span>
+        }
+      },
+
+      <span class="cm">// Valor por defecto si null/undefined</span>
+      rating_display: { <span class="op">$ifNull</span>: [<span class="s">"$rating"</span>, <span class="n">0</span>] },
+
+      <span class="cm">// Redondear</span>
+      precio_redondeado: { <span class="op">$round</span>: [<span class="s">"$precio"</span>, <span class="n">2</span>] },
+
+      <span class="cm">// Tamaño de array</span>
+      num_tags: { <span class="op">$size</span>: <span class="s">"$tags"</span> },
+
+      <span class="cm">// Tipo BSON del campo</span>
+      tipo_precio: { <span class="op">$type</span>: <span class="s">"$precio"</span> }
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-orange">
+    <div class="card-title">📤 $unwind — Descomponer arrays</div>
+    <div class="card-sub">Convierte cada elemento del array en un documento separado. Esencial antes de hacer $group sobre un array.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Forma simple</span>
+{ <span class="op">$unwind</span>: <span class="s">"$tags"</span> }
+
+<span class="cm">// Forma completa con opciones</span>
+{
+  <span class="op">$unwind</span>: {
+    path:                       <span class="s">"$tags"</span>,
+    includeArrayIndex:          <span class="s">"posicion"</span>,  <span class="cm">// agrega el índice como campo</span>
+    preserveNullAndEmptyArrays: <span class="b">true</span>         <span class="cm">// conserva docs sin el campo</span>
+  }
+}
+
+<span class="cm">// Caso de uso: contar cuántos productos tiene cada tag</span>
+<span class="fn">db</span>.productos.aggregate([
+  { <span class="op">$unwind</span>: <span class="s">"$tags"</span> },
+  {
+    <span class="op">$group</span>: {
+      _id:   <span class="s">"$tags"</span>,
+      count: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  { <span class="op">$sort</span>: { count: <span class="op">-1</span> } }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-yellow">
+    <div class="card-title">📦 $addFields, $set, $unset, $replaceRoot</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// $addFields — agrega campos SIN tocar los existentes</span>
+{
+  <span class="op">$addFields</span>: {
+    precio_con_iva: { <span class="op">$multiply</span>: [<span class="s">"$precio"</span>, <span class="n">1.19</span>] },
+    en_stock:       { <span class="op">$gt</span>: [<span class="s">"$stock"</span>, <span class="n">0</span>] }
+  }
+}
+
+<span class="cm">// $set es un ALIAS de $addFields (más moderno)</span>
+{ <span class="op">$set</span>: { nuevo_campo: <span class="s">"valor"</span> } }
+
+<span class="cm">// $unset — elimina campos en el pipeline</span>
+{ <span class="op">$unset</span>: [<span class="s">"campo1"</span>, <span class="s">"campo2"</span>] }
+{ <span class="op">$unset</span>: <span class="s">"campo"</span> }   <span class="cm">// un solo campo</span>
+
+<span class="cm">// $replaceRoot — convierte un subdocumento en la raíz</span>
+{ <span class="op">$replaceRoot</span>: { newRoot: <span class="s">"$specs"</span> } }
+
+<span class="cm">// $replaceWith — alias moderno de $replaceRoot</span>
+{ <span class="op">$replaceWith</span>: <span class="s">"$specs"</span> }
+
+<span class="cm">// $replaceRoot fusionando con $mergeObjects</span>
+<span class="cm">// (preserva los campos raíz y agrega los del subdoc)</span>
+{
+  <span class="op">$replaceRoot</span>: {
+    newRoot: {
+      <span class="op">$mergeObjects</span>: [<span class="s">"$$ROOT"</span>, <span class="s">"$specs"</span>]
+    }
+  }
+}</pre>
+    </div>
+  </div>
+
+  <div class="card c-red">
+    <div class="card-title">🗃️ $bucket y $bucketAuto</div>
+    <div class="card-sub">Clasifica documentos en rangos de valores (histograma).</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// $bucket — rangos MANUALES</span>
+<span class="fn">db</span>.productos.aggregate([
+  {
+    <span class="op">$bucket</span>: {
+      groupBy:    <span class="s">"$precio"</span>,
+      boundaries: [<span class="n">0</span>, <span class="n">50</span>, <span class="n">100</span>, <span class="n">500</span>, <span class="n">2000</span>],  <span class="cm">// límites de los rangos</span>
+      default:    <span class="s">"Fuera de rango"</span>,
+      output: {
+        cantidad: { <span class="op">$sum</span>: <span class="n">1</span> },
+        productos: { <span class="op">$push</span>: <span class="s">"$nombre"</span> },
+        promedio:  { <span class="op">$avg</span>: <span class="s">"$precio"</span> }
+      }
+    }
+  }
+])
+
+<span class="cm">// $bucketAuto — MongoDB divide automáticamente en N grupos</span>
+<span class="fn">db</span>.productos.aggregate([
+  {
+    <span class="op">$bucketAuto</span>: {
+      groupBy: <span class="s">"$precio"</span>,
+      buckets: <span class="n">4</span>,           <span class="cm">// número de grupos deseados</span>
+      output: {
+        count: { <span class="op">$sum</span>: <span class="n">1</span> },
+        avg:   { <span class="op">$avg</span>: <span class="s">"$precio"</span> }
+      }
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-cyan">
+    <div class="card-title">🎲 $facet — Múltiples pipelines paralelos</div>
+    <div class="card-sub">Ejecuta varios sub-pipelines sobre los mismos datos. Ideal para dashboards y filtros combinados.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.productos.aggregate([
+  {
+    <span class="op">$facet</span>: {
+
+      <span class="cm">// Faceta 1: resumen por categoría</span>
+      <span class="s">"por_categoria"</span>: [
+        {
+          <span class="op">$group</span>: {
+            _id:   <span class="s">"$categoria"</span>,
+            count: { <span class="op">$sum</span>: <span class="n">1</span> }
+          }
+        }
+      ],
+
+      <span class="cm">// Faceta 2: rangos de precio</span>
+      <span class="s">"rangos_precio"</span>: [
+        {
+          <span class="op">$bucket</span>: {
+            groupBy:    <span class="s">"$precio"</span>,
+            boundaries: [<span class="n">0</span>, <span class="n">100</span>, <span class="n">500</span>, <span class="n">2000</span>],
+            default:    <span class="s">"Otro"</span>
+          }
+        }
+      ],
+
+      <span class="cm">// Faceta 3: estadísticas globales</span>
+      <span class="s">"estadisticas"</span>: [
+        {
+          <span class="op">$group</span>: {
+            _id:            <span class="b">null</span>,
+            total:          { <span class="op">$sum</span>: <span class="n">1</span> },
+            precioPromedio: { <span class="op">$avg</span>: <span class="s">"$precio"</span> },
+            stockTotal:     { <span class="op">$sum</span>: <span class="s">"$stock"</span> }
+          }
+        }
+      ]
+
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💾 $out y $merge — Guardar resultados</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// $out — guarda el resultado en una nueva collection</span>
+<span class="cm">// REEMPLAZA la collection si ya existe</span>
+<span class="fn">db</span>.productos.aggregate([
+  {
+    <span class="op">$group</span>: {
+      _id:   <span class="s">"$categoria"</span>,
+      total: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  { <span class="op">$out</span>: <span class="s">"resumen_categorias"</span> }
+])
+
+<span class="cm">// $merge — más flexible: puede hacer upsert por campo clave</span>
+<span class="fn">db</span>.productos.aggregate([
+  {
+    <span class="op">$group</span>: {
+      _id:   <span class="s">"$categoria"</span>,
+      total: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  {
+    <span class="op">$merge</span>: {
+      into:           <span class="s">"resumen_categorias"</span>,
+      on:             <span class="s">"_id"</span>,
+      whenMatched:    <span class="s">"merge"</span>,    <span class="cm">// "replace" | "keepExisting" | "fail"</span>
+      whenNotMatched: <span class="s">"insert"</span>   <span class="cm">// "discard" | "fail"</span>
+    }
+  }
+])
+
+<span class="cm">// $count — contar documentos en el pipeline</span>
+<span class="fn">db</span>.productos.aggregate([
+  { <span class="op">$match</span>: { activo: <span class="b">true</span> } },
+  { <span class="op">$count</span>: <span class="s">"total_activos"</span> }
+])
+
+<span class="cm">// $sample — muestra aleatoria de N documentos</span>
+<span class="fn">db</span>.productos.aggregate([
+  { <span class="op">$sample</span>: { size: <span class="n">3</span> } }
+])</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ 07 LOOKUP ════════════════════ -->
+<div id="sec-lookup" class="sec">
+  <div class="sec-label">07 — Joins</div>
+  <h2 class="sec-title">$lookup — Unir colecciones</h2>
+  <p class="sec-desc">Equivalente al JOIN de SQL. Combina datos de diferentes colecciones en el pipeline.</p>
+
+  <div class="alert a-info">ℹ️ <b>¿Cómo funciona?</b> $lookup busca documentos de otra colección que coincidan con un campo, y agrega el resultado como un <b>array</b> en el documento actual. Luego puedes usar $unwind para "aplanarlo".</div>
+
+  <div class="card">
+    <div class="card-title">🔗 $lookup básico</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Traer datos del cliente en cada pedido</span>
+<span class="fn">db</span>.pedidos.aggregate([
+
+  <span class="cm">// Stage 1: hacer el join</span>
+  {
+    <span class="op">$lookup</span>: {
+      from:         <span class="s">"clientes"</span>,      <span class="cm">// collection a unir</span>
+      localField:   <span class="s">"cliente_id"</span>,   <span class="cm">// campo en pedidos</span>
+      foreignField: <span class="s">"email"</span>,         <span class="cm">// campo en clientes</span>
+      as:           <span class="s">"info_cliente"</span>  <span class="cm">// nombre del array resultado</span>
+    }
+  },
+
+  <span class="cm">// Stage 2: aplanar el array (1 cliente por pedido)</span>
+  {
+    <span class="op">$unwind</span>: {
+      path:                       <span class="s">"$info_cliente"</span>,
+      preserveNullAndEmptyArrays: <span class="b">true</span>   <span class="cm">// mantener pedidos sin cliente</span>
+    }
+  },
+
+  <span class="cm">// Stage 3: proyectar solo lo necesario</span>
+  {
+    <span class="op">$project</span>: {
+      _id:     <span class="n">0</span>,
+      producto: <span class="n">1</span>,
+      total:    <span class="n">1</span>,
+      estado:   <span class="n">1</span>,
+      cliente:  <span class="s">"$info_cliente.nombre"</span>,
+      ciudad:   <span class="s">"$info_cliente.ciudad"</span>
+    }
+  }
+
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-blue">
+    <div class="card-title">⚡ $lookup con pipeline (avanzado)</div>
+    <div class="card-sub">Permite filtrar y transformar la colección secundaria antes de unirla. Mucho más poderoso.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Para cada cliente, traer sus pedidos activos ordenados por fecha</span>
+<span class="fn">db</span>.clientes.aggregate([
+
+  {
+    <span class="op">$lookup</span>: {
+      from: <span class="s">"pedidos"</span>,
+
+      <span class="cm">// Variables locales disponibles dentro del pipeline</span>
+      let: { email_cliente: <span class="s">"$email"</span> },
+
+      pipeline: [
+
+        <span class="cm">// Usar $$variable para acceder a la variable local</span>
+        {
+          <span class="op">$match</span>: {
+            <span class="op">$expr</span>: {
+              <span class="op">$eq</span>: [<span class="s">"$cliente_id"</span>, <span class="s">"$$email_cliente"</span>]
+            }
+          }
+        },
+
+        <span class="cm">// Filtrar cancelados</span>
+        {
+          <span class="op">$match</span>: {
+            estado: { <span class="op">$ne</span>: <span class="s">"cancelado"</span> }
+          }
+        },
+
+        <span class="cm">// Ordenar por fecha más reciente</span>
+        { <span class="op">$sort</span>: { fecha: <span class="op">-1</span> } },
+
+        <span class="cm">// Solo los campos necesarios</span>
+        {
+          <span class="op">$project</span>: {
+            _id:      <span class="n">0</span>,
+            producto: <span class="n">1</span>,
+            total:    <span class="n">1</span>,
+            estado:   <span class="n">1</span>
+          }
+        }
+
+      ],
+
+      as: <span class="s">"pedidos_activos"</span>
+    }
+  },
+
+  <span class="cm">// Solo clientes que tienen al menos un pedido</span>
+  {
+    <span class="op">$match</span>: {
+      <span class="s">"pedidos_activos.0"</span>: { <span class="op">$exists</span>: <span class="b">true</span> }
+    }
+  },
+
+  <span class="cm">// Agregar cantidad de pedidos como campo calculado</span>
+  {
+    <span class="op">$addFields</span>: {
+      total_pedidos: { <span class="op">$size</span>: <span class="s">"$pedidos_activos"</span> }
+    }
+  }
+
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-purple">
+    <div class="card-title">🌐 Reporte completo: ventas por ciudad</div>
+    <div class="card-sub">Pipeline real que combina $lookup + $group + $addFields + $project.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.pedidos.aggregate([
+
+  <span class="cm">// 1. Solo pedidos entregados</span>
+  {
+    <span class="op">$match</span>: { estado: <span class="s">"entregado"</span> }
+  },
+
+  <span class="cm">// 2. Unir con clientes para obtener la ciudad</span>
+  {
+    <span class="op">$lookup</span>: {
+      from:         <span class="s">"clientes"</span>,
+      localField:   <span class="s">"cliente_id"</span>,
+      foreignField: <span class="s">"email"</span>,
+      as:           <span class="s">"cliente"</span>
+    }
+  },
+  { <span class="op">$unwind</span>: <span class="s">"$cliente"</span> },
+
+  <span class="cm">// 3. Agrupar por ciudad</span>
+  {
+    <span class="op">$group</span>: {
+      _id:         <span class="s">"$cliente.ciudad"</span>,
+      totalVentas: { <span class="op">$sum</span>: <span class="s">"$total"</span> },
+      numPedidos:  { <span class="op">$sum</span>: <span class="n">1</span> },
+      clientes:    { <span class="op">$addToSet</span>: <span class="s">"$cliente.nombre"</span> }
+    }
+  },
+
+  <span class="cm">// 4. Calcular ticket promedio</span>
+  {
+    <span class="op">$addFields</span>: {
+      ticketPromedio: {
+        <span class="op">$divide</span>: [<span class="s">"$totalVentas"</span>, <span class="s">"$numPedidos"</span>]
+      }
+    }
+  },
+
+  <span class="cm">// 5. Ordenar por total de ventas</span>
+  { <span class="op">$sort</span>: { totalVentas: <span class="op">-1</span> } },
+
+  <span class="cm">// 6. Formato final</span>
+  {
+    <span class="op">$project</span>: {
+      _id:            <span class="n">0</span>,
+      ciudad:         <span class="s">"$_id"</span>,
+      totalVentas:    <span class="n">1</span>,
+      numPedidos:     <span class="n">1</span>,
+      numClientes:    { <span class="op">$size</span>: <span class="s">"$clientes"</span> },
+      ticketPromedio: { <span class="op">$round</span>: [<span class="s">"$ticketPromedio"</span>, <span class="n">2</span>] }
+    }
+  }
+
+])</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ 08 EXPRESIONES ════════════════════ -->
+<div id="sec-exprs" class="sec">
+  <div class="sec-label">08 — Expresiones de Agregación</div>
+  <h2 class="sec-title">Operadores de expresión</h2>
+  <p class="sec-desc">Todo lo que puedes calcular dentro de $project, $addFields, $group, y $match.</p>
+
+  <div class="card">
+    <div class="card-title">🔢 Matemáticos</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.productos.aggregate([
+  {
+    <span class="op">$project</span>: {
+      nombre: <span class="n">1</span>,
+
+      suma:    { <span class="op">$add</span>:      [<span class="s">"$precio"</span>, <span class="n">10</span>] },
+      resta:   { <span class="op">$subtract</span>: [<span class="s">"$precio"</span>, <span class="n">10</span>] },
+      mult:    { <span class="op">$multiply</span>: [<span class="s">"$precio"</span>, <span class="n">1.19</span>] },
+      div:     { <span class="op">$divide</span>:   [<span class="s">"$stock"</span>, <span class="n">2</span>] },
+      modulo:  { <span class="op">$mod</span>:      [<span class="s">"$stock"</span>, <span class="n">3</span>] },
+      potencia:{ <span class="op">$pow</span>:      [<span class="s">"$rating"</span>, <span class="n">2</span>] },
+      raiz:    { <span class="op">$sqrt</span>:     <span class="s">"$precio"</span> },
+      abs:     { <span class="op">$abs</span>:      <span class="s">"$diferencia"</span> },
+      techo:   { <span class="op">$ceil</span>:     <span class="s">"$precio"</span> },
+      piso:    { <span class="op">$floor</span>:    <span class="s">"$precio"</span> },
+      redond:  { <span class="op">$round</span>:    [<span class="s">"$precio"</span>, <span class="n">2</span>] },
+      trunc:   { <span class="op">$trunc</span>:    [<span class="s">"$precio"</span>, <span class="n">0</span>] },
+      log10:   { <span class="op">$log10</span>:    <span class="s">"$precio"</span> },
+      exp:     { <span class="op">$exp</span>:      <span class="n">1</span> }           <span class="cm">// e^1</span>
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-blue">
+    <div class="card-title">📝 Strings</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.productos.aggregate([
+  {
+    <span class="op">$project</span>: {
+      nombre: <span class="n">1</span>,
+
+      mayusculas: { <span class="op">$toUpper</span>:    <span class="s">"$nombre"</span> },
+      minusculas: { <span class="op">$toLower</span>:    <span class="s">"$nombre"</span> },
+      longitud:   { <span class="op">$strLenCP</span>:   <span class="s">"$nombre"</span> },   <span class="cm">// caracteres Unicode</span>
+      substr:     { <span class="op">$substrCP</span>:   [<span class="s">"$nombre"</span>, <span class="n">0</span>, <span class="n">5</span>] },  <span class="cm">// desde 0, tomar 5</span>
+      trim:       { <span class="op">$trim</span>:        { input: <span class="s">"$nombre"</span> } },
+      ltrim:      { <span class="op">$ltrim</span>:       { input: <span class="s">"$nombre"</span> } },
+      rtrim:      { <span class="op">$rtrim</span>:       { input: <span class="s">"$nombre"</span> } },
+      split:      { <span class="op">$split</span>:      [<span class="s">"$nombre"</span>, <span class="s">" "</span>] },  <span class="cm">// array de palabras</span>
+      concat:     { <span class="op">$concat</span>:     [<span class="s">"$nombre"</span>, <span class="s">" ("</span>, <span class="s">"$categoria"</span>, <span class="s">")"</span>] },
+      contiene:   { <span class="op">$regexMatch</span>: { input: <span class="s">"$nombre"</span>, regex: <span class="s">"pro"</span>, options: <span class="s">"i"</span> } },
+      indice:     { <span class="op">$indexOfCP</span>:  [<span class="s">"$nombre"</span>, <span class="s">"a"</span>] },  <span class="cm">// primera ocurrencia</span>
+      reemplazar: {
+        <span class="op">$replaceOne</span>: {
+          input:       <span class="s">"$nombre"</span>,
+          find:        <span class="s">"Pro"</span>,
+          replacement: <span class="s">"Max"</span>
+        }
+      }
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-orange">
+    <div class="card-title">📅 Fechas</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.pedidos.aggregate([
+  {
+    <span class="op">$project</span>: {
+      producto: <span class="n">1</span>,
+      fecha:    <span class="n">1</span>,
+
+      anio:       { <span class="op">$year</span>:          <span class="s">"$fecha"</span> },
+      mes:        { <span class="op">$month</span>:         <span class="s">"$fecha"</span> },
+      dia:        { <span class="op">$dayOfMonth</span>:    <span class="s">"$fecha"</span> },
+      diaSemana:  { <span class="op">$dayOfWeek</span>:     <span class="s">"$fecha"</span> },  <span class="cm">// 1=dom, 7=sab</span>
+      diaDelAnio: { <span class="op">$dayOfYear</span>:     <span class="s">"$fecha"</span> },
+      semana:     { <span class="op">$week</span>:           <span class="s">"$fecha"</span> },
+      hora:       { <span class="op">$hour</span>:           <span class="s">"$fecha"</span> },
+      minuto:     { <span class="op">$minute</span>:         <span class="s">"$fecha"</span> },
+      segundo:    { <span class="op">$second</span>:         <span class="s">"$fecha"</span> },
+
+      <span class="cm">// Convertir a string formateado</span>
+      fecha_str: {
+        <span class="op">$dateToString</span>: {
+          format: <span class="s">"%Y-%m-%d"</span>,
+          date:   <span class="s">"$fecha"</span>
+        }
+      },
+
+      <span class="cm">// Diferencia en días desde hoy</span>
+      dias_desde_pedido: {
+        <span class="op">$divide</span>: [
+          {
+            <span class="op">$subtract</span>: [<span class="s">"$$NOW"</span>, <span class="s">"$fecha"</span>]
+          },
+          <span class="n">86400000</span>   <span class="cm">// milisegundos en un día</span>
+        ]
+      }
+    }
+  }
+])
+
+<span class="cm">// Agrupar pedidos por mes y año</span>
+<span class="fn">db</span>.pedidos.aggregate([
+  {
+    <span class="op">$group</span>: {
+      _id: {
+        anio: { <span class="op">$year</span>:  <span class="s">"$fecha"</span> },
+        mes:  { <span class="op">$month</span>: <span class="s">"$fecha"</span> }
+      },
+      total:     { <span class="op">$sum</span>: <span class="s">"$total"</span> },
+      numPedidos: { <span class="op">$sum</span>: <span class="n">1</span> }
+    }
+  },
+  { <span class="op">$sort</span>: { <span class="s">"_id.anio"</span>: <span class="n">1</span>, <span class="s">"_id.mes"</span>: <span class="n">1</span> } }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-purple">
+    <div class="card-title">🔀 Condicionales: $cond, $switch, $ifNull</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.productos.aggregate([
+  {
+    <span class="op">$project</span>: {
+      nombre: <span class="n">1</span>,
+      precio: <span class="n">1</span>,
+
+      <span class="cm">// $cond forma larga (más legible)</span>
+      estado_stock: {
+        <span class="op">$cond</span>: {
+          <span class="k">if</span>:   { <span class="op">$gt</span>: [<span class="s">"$stock"</span>, <span class="n">0</span>] },
+          <span class="k">then</span>: <span class="s">"Disponible"</span>,
+          <span class="k">else</span>: <span class="s">"Agotado"</span>
+        }
+      },
+
+      <span class="cm">// $cond forma corta (array)</span>
+      en_oferta: {
+        <span class="op">$cond</span>: [{ <span class="op">$in</span>: [<span class="s">"oferta"</span>, <span class="s">"$tags"</span>] }, <span class="b">true</span>, <span class="b">false</span>]
+      },
+
+      <span class="cm">// $switch — como switch/case, múltiples ramas</span>
+      nivel_precio: {
+        <span class="op">$switch</span>: {
+          branches: [
+            {
+              <span class="k">case</span>: { <span class="op">$lte</span>: [<span class="s">"$precio"</span>, <span class="n">50</span>] },
+              <span class="k">then</span>: <span class="s">"💚 Económico"</span>
+            },
+            {
+              <span class="k">case</span>: { <span class="op">$lte</span>: [<span class="s">"$precio"</span>, <span class="n">200</span>] },
+              <span class="k">then</span>: <span class="s">"🔵 Medio"</span>
+            },
+            {
+              <span class="k">case</span>: { <span class="op">$lte</span>: [<span class="s">"$precio"</span>, <span class="n">800</span>] },
+              <span class="k">then</span>: <span class="s">"🟠 Premium"</span>
+            }
+          ],
+          default: <span class="s">"🔴 Lujo"</span>
+        }
+      },
+
+      <span class="cm">// $ifNull — valor por defecto si null o inexistente</span>
+      rating_final: { <span class="op">$ifNull</span>: [<span class="s">"$rating"</span>, <span class="n">0</span>] },
+
+      <span class="cm">// $ifNull en cadena (prueba múltiples campos)</span>
+      precio_final: {
+        <span class="op">$ifNull</span>: [<span class="s">"$precio_oferta"</span>, { <span class="op">$ifNull</span>: [<span class="s">"$precio"</span>, <span class="n">999</span>] }]
+      }
+    }
+  }
+])
+
+<span class="cm">// $expr en $match — comparar dos campos del mismo documento</span>
+<span class="fn">db</span>.productos.find({
+  <span class="op">$expr</span>: {
+    <span class="op">$gt</span>: [<span class="s">"$precio"</span>, { <span class="op">$multiply</span>: [<span class="s">"$stock"</span>, <span class="n">5</span>] }]
+  }
+})</pre>
+    </div>
+  </div>
+
+  <div class="card c-cyan">
+    <div class="card-title">🗂️ Arrays en expresiones</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.productos.aggregate([
+  {
+    <span class="op">$project</span>: {
+      nombre: <span class="n">1</span>,
+
+      <span class="cm">// Tamaño del array</span>
+      num_tags: { <span class="op">$size</span>: <span class="s">"$tags"</span> },
+
+      <span class="cm">// Verificar si contiene un elemento</span>
+      es_oferta: { <span class="op">$in</span>: [<span class="s">"oferta"</span>, <span class="s">"$tags"</span>] },
+
+      <span class="cm">// Primer y último elemento</span>
+      primer_tag:  { <span class="op">$first</span>: <span class="s">"$tags"</span> },
+      ultimo_tag:  { <span class="op">$last</span>:  <span class="s">"$tags"</span> },
+
+      <span class="cm">// Slice del array (inicio, cantidad)</span>
+      primeros_2: { <span class="op">$slice</span>: [<span class="s">"$tags"</span>, <span class="n">2</span>] },
+
+      <span class="cm">// Índice de un elemento</span>
+      pos_oferta: { <span class="op">$indexOfArray</span>: [<span class="s">"$tags"</span>, <span class="s">"oferta"</span>] },
+
+      <span class="cm">// Transformar cada elemento: $map</span>
+      tags_upper: {
+        <span class="op">$map</span>: {
+          input: <span class="s">"$tags"</span>,
+          as:    <span class="s">"tag"</span>,
+          in:    { <span class="op">$toUpper</span>: <span class="s">"$$tag"</span> }
+        }
+      },
+
+      <span class="cm">// Filtrar elementos del array: $filter</span>
+      tags_largos: {
+        <span class="op">$filter</span>: {
+          input: <span class="s">"$tags"</span>,
+          as:    <span class="s">"tag"</span>,
+          cond:  { <span class="op">$gte</span>: [{ <span class="op">$strLenCP</span>: <span class="s">"$$tag"</span> }, <span class="n">5</span>] }
+        }
+      },
+
+      <span class="cm">// Reducir a un valor: $reduce</span>
+      tags_concatenados: {
+        <span class="op">$reduce</span>: {
+          input:        <span class="s">"$tags"</span>,
+          initialValue: <span class="s">""</span>,
+          in: {
+            <span class="op">$concat</span>: [
+              <span class="s">"$$value"</span>,
+              { <span class="op">$cond</span>: [{ <span class="op">$eq</span>: [<span class="s">"$$value"</span>, <span class="s">""</span>] }, <span class="s">""</span>, <span class="s">", "</span>] },
+              <span class="s">"$$this"</span>
+            ]
+          }
+        }
+      }
+    }
+  }
+])</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ 09 INDICES ════════════════════ -->
+<div id="sec-idx" class="sec">
+  <div class="sec-label">09 — Rendimiento</div>
+  <h2 class="sec-title">Índices</h2>
+  <p class="sec-desc">Sin índices MongoDB escanea toda la colección. Los índices son la diferencia entre ms y minutos.</p>
+
+  <div class="card">
+    <div class="card-title">⚡ Crear índices</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// ── Índice simple ─────────────────────────────</span>
+<span class="cm">// 1 = ascendente | -1 = descendente</span>
+<span class="fn">db</span>.productos.createIndex({ precio: <span class="n">1</span> })
+<span class="fn">db</span>.productos.createIndex({ nombre: <span class="op">-1</span> })
+
+<span class="cm">// ── Índice compuesto (múltiples campos) ───────</span>
+<span class="fn">db</span>.productos.createIndex({ categoria: <span class="n">1</span>, precio: <span class="op">-1</span> })
+
+<span class="cm">// ── Índice único ──────────────────────────────</span>
+<span class="cm">// Garantiza que no haya duplicados</span>
+<span class="fn">db</span>.clientes.createIndex(
+  { email: <span class="n">1</span> },
+  { unique: <span class="b">true</span> }
+)
+
+<span class="cm">// ── Índice con nombre personalizado ───────────</span>
+<span class="fn">db</span>.productos.createIndex(
+  { nombre: <span class="n">1</span> },
+  { name: <span class="s">"idx_nombre_asc"</span> }
+)
+
+<span class="cm">// ── Índice sparse ─────────────────────────────</span>
+<span class="cm">// Solo indexa documentos que TIENEN el campo</span>
+<span class="fn">db</span>.productos.createIndex(
+  { descuento: <span class="n">1</span> },
+  { sparse: <span class="b">true</span> }
+)
+
+<span class="cm">// ── Índice TTL ────────────────────────────────</span>
+<span class="cm">// Elimina documentos automáticamente después de N segundos</span>
+<span class="fn">db</span>.sesiones.createIndex(
+  { createdAt: <span class="n">1</span> },
+  { expireAfterSeconds: <span class="n">3600</span> }   <span class="cm">// 1 hora</span>
+)
+
+<span class="cm">// ── Índice de texto (full-text search) ────────</span>
+<span class="fn">db</span>.productos.createIndex(
+  { nombre: <span class="s">"text"</span>, descripcion: <span class="s">"text"</span> }
+)
+
+<span class="cm">// ── Índice 2dsphere (geoespacial) ─────────────</span>
+<span class="fn">db</span>.lugares.createIndex({ ubicacion: <span class="s">"2dsphere"</span> })
+
+<span class="cm">// ── Gestión de índices ────────────────────────</span>
+<span class="fn">db</span>.productos.getIndexes()                  <span class="cm">// ver todos</span>
+<span class="fn">db</span>.productos.dropIndex(<span class="s">"idx_nombre_asc"</span>)  <span class="cm">// eliminar por nombre</span>
+<span class="fn">db</span>.productos.dropIndex({ precio: <span class="n">1</span> })     <span class="cm">// eliminar por spec</span>
+<span class="fn">db</span>.productos.dropIndexes()                 <span class="cm">// eliminar todos</span></pre>
+    </div>
+  </div>
+
+  <div class="card c-blue">
+    <div class="card-title">🔬 explain() y búsqueda de texto</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Ver plan de ejecución básico</span>
+<span class="fn">db</span>.productos.find({ precio: { <span class="op">$gt</span>: <span class="n">100</span> } }).explain()
+
+<span class="cm">// Con estadísticas de ejecución</span>
+<span class="fn">db</span>.productos.find({ precio: { <span class="op">$gt</span>: <span class="n">100</span> } }).explain(<span class="s">"executionStats"</span>)
+
+<span class="cm">// INTERPRETAR: busca en el output...</span>
+<span class="cm">//   "COLLSCAN" → sin índice (escanea todo) ← MALO</span>
+<span class="cm">//   "IXSCAN"   → usa índice              ← BUENO</span>
+<span class="cm">//   "totalDocsExamined" vs "nReturned"  ← idealmente iguales</span>
+
+<span class="cm">// Forzar uso de un índice específico</span>
+<span class="fn">db</span>.productos.find({ precio: { <span class="op">$gt</span>: <span class="n">100</span> } })
+  .hint({ precio: <span class="n">1</span> })
+
+<span class="cm">// ── Búsqueda de texto completo ────────────────</span>
+<span class="cm">// Requiere un índice de texto creado antes</span>
+<span class="fn">db</span>.productos.find({
+  <span class="op">$text</span>: { <span class="op">$search</span>: <span class="s">"laptop pro"</span> }
+})
+
+<span class="cm">// Excluir palabra con guion</span>
+<span class="fn">db</span>.productos.find({
+  <span class="op">$text</span>: { <span class="op">$search</span>: <span class="s">"laptop -barato"</span> }
+})
+
+<span class="cm">// Con score de relevancia</span>
+<span class="fn">db</span>.productos.find(
+  { <span class="op">$text</span>: { <span class="op">$search</span>: <span class="s">"laptop"</span> } },
+  { score: { <span class="op">$meta</span>: <span class="s">"textScore"</span> } }
+).sort({
+  score: { <span class="op">$meta</span>: <span class="s">"textScore"</span> }
+})</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ 10 SCHEMA ════════════════════ -->
+<div id="sec-schema" class="sec">
+  <div class="sec-label">10 — Validación</div>
+  <h2 class="sec-title">Schema Validation</h2>
+  <p class="sec-desc">MongoDB permite definir reglas de validación para garantizar la integridad de los datos.</p>
+
+  <div class="card">
+    <div class="card-title">✅ $jsonSchema — Validación completa</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.createCollection(<span class="s">"usuarios"</span>, {
+  validator: {
+    <span class="op">$jsonSchema</span>: {
+      bsonType:    <span class="s">"object"</span>,
+      required:    [<span class="s">"nombre"</span>, <span class="s">"email"</span>, <span class="s">"edad"</span>],
+      description: <span class="s">"Esquema de usuario"</span>,
+
+      properties: {
+
+        nombre: {
+          bsonType:    <span class="s">"string"</span>,
+          minLength:   <span class="n">2</span>,
+          maxLength:   <span class="n">100</span>,
+          description: <span class="s">"Nombre requerido, string de 2-100 chars"</span>
+        },
+
+        email: {
+          bsonType:    <span class="s">"string"</span>,
+          pattern:     <span class="s">"^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$"</span>,
+          description: <span class="s">"Email válido requerido"</span>
+        },
+
+        edad: {
+          bsonType:    <span class="s">"int"</span>,
+          minimum:     <span class="n">18</span>,
+          maximum:     <span class="n">120</span>,
+          description: <span class="s">"Entero entre 18 y 120"</span>
+        },
+
+        rol: {
+          enum:        [<span class="s">"admin"</span>, <span class="s">"usuario"</span>, <span class="s">"moderador"</span>],
+          description: <span class="s">"Solo valores del enum permitidos"</span>
+        },
+
+        tags: {
+          bsonType:    <span class="s">"array"</span>,
+          items: {
+            bsonType: <span class="s">"string"</span>
+          },
+          description: <span class="s">"Array de strings"</span>
+        },
+
+        direccion: {
+          bsonType:    <span class="s">"object"</span>,
+          required:    [<span class="s">"ciudad"</span>],
+          properties: {
+            ciudad: { bsonType: <span class="s">"string"</span> },
+            cp:     { bsonType: <span class="s">"string"</span> }
+          }
+        }
+
+      }
+    }
+  },
+  validationLevel:  <span class="s">"strict"</span>,   <span class="cm">// "strict" | "moderate"</span>
+  validationAction: <span class="s">"error"</span>    <span class="cm">// "error"  | "warn"</span>
+})
+
+<span class="cm">// Modificar la validación de una collection existente</span>
+<span class="fn">db</span>.runCommand({
+  collMod:    <span class="s">"usuarios"</span>,
+  validator:  {
+    <span class="op">$jsonSchema</span>: { <span class="cm">/* nuevo schema */</span> }
+  },
+  validationLevel:  <span class="s">"moderate"</span>,
+  validationAction: <span class="s">"warn"</span>
+})
+
+<span class="cm">// Ver la validación actual de una collection</span>
+<span class="fn">db</span>.getCollectionInfos({
+  name: <span class="s">"usuarios"</span>
+})</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ 11 MISC ════════════════════ -->
+<div id="sec-misc" class="sec">
+  <div class="sec-label">11 — Extra</div>
+  <h2 class="sec-title">Transacciones, Bulk y más</h2>
+
+  <div class="card">
+    <div class="card-title">💱 Transacciones multi-documento</div>
+    <div class="card-sub">Requiere Replica Set. Garantiza ACID: si algo falla, todo se revierte.</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="k">const</span> session = <span class="fn">db</span>.getMongo().startSession()
+session.startTransaction()
+
+<span class="k">try</span> {
+  <span class="k">const</span> prods  = session.getDatabase(<span class="s">"tienda"</span>).productos
+  <span class="k">const</span> pedidos = session.getDatabase(<span class="s">"tienda"</span>).pedidos
+
+  <span class="cm">// Reducir stock</span>
+  prods.updateOne(
+    { nombre: <span class="s">"Laptop Pro"</span> },
+    { <span class="op">$inc</span>: { stock: <span class="op">-1</span> } },
+    { session }
+  )
+
+  <span class="cm">// Crear el pedido</span>
+  pedidos.insertOne(
+    {
+      cliente_id: <span class="s">"ana@email.com"</span>,
+      producto:   <span class="s">"Laptop Pro"</span>,
+      total:      <span class="n">1299</span>,
+      estado:     <span class="s">"pendiente"</span>,
+      fecha:      <span class="k">new</span> <span class="fn">Date</span>()
+    },
+    { session }
+  )
+
+  <span class="cm">// Si todo bien → confirmar</span>
+  session.commitTransaction()
+  print(<span class="s">"Transacción exitosa"</span>)
+
+} <span class="k">catch</span> (error) {
+  <span class="cm">// Si algo falla → revertir todo</span>
+  session.abortTransaction()
+  print(<span class="s">"Error, transacción revertida: "</span> + error)
+
+} <span class="k">finally</span> {
+  session.endSession()
+}</pre>
+    </div>
+  </div>
+
+  <div class="card c-blue">
+    <div class="card-title">📦 bulkWrite — múltiples operaciones en una sola llamada</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="fn">db</span>.productos.bulkWrite([
+
+  <span class="cm">// Insertar nuevo</span>
+  {
+    insertOne: {
+      document: { nombre: <span class="s">"Producto X"</span>, precio: <span class="n">50</span> }
+    }
+  },
+
+  <span class="cm">// Actualizar uno</span>
+  {
+    updateOne: {
+      filter: { nombre: <span class="s">"Mouse Inalámbrico"</span> },
+      update: { <span class="op">$set</span>: { precio: <span class="n">38</span> } }
+    }
+  },
+
+  <span class="cm">// Actualizar muchos</span>
+  {
+    updateMany: {
+      filter: { categoria: <span class="s">"accesorios"</span> },
+      update: { <span class="op">$inc</span>: { stock: <span class="n">10</span> } }
+    }
+  },
+
+  <span class="cm">// Reemplazar</span>
+  {
+    replaceOne: {
+      filter: { nombre: <span class="s">"Hub USB-C"</span> },
+      replacement: { nombre: <span class="s">"Hub USB-C Pro"</span>, precio: <span class="n">55</span> },
+      upsert: <span class="b">true</span>
+    }
+  },
+
+  <span class="cm">// Eliminar uno</span>
+  {
+    deleteOne: {
+      filter: { stock: <span class="n">0</span> }
+    }
+  }
+
+], {
+  ordered: <span class="b">true</span>   <span class="cm">// false = continúa aunque falle una operación</span>
+})</pre>
+    </div>
+  </div>
+
+  <div class="card c-orange">
+    <div class="card-title">🔁 $graphLookup — Búsqueda recursiva</div>
+    <div class="card-sub">Busca en grafos/árboles de relaciones (categorías anidadas, organigramas, etc.).</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Ejemplo: jerarquía de categorías</span>
+<span class="fn">db</span>.categorias.insertMany([
+  { _id: <span class="s">"tech"</span>,       nombre: <span class="s">"Tecnología"</span>,    padre: <span class="b">null</span>     },
+  { _id: <span class="s">"laptops"</span>,    nombre: <span class="s">"Laptops"</span>,        padre: <span class="s">"tech"</span>   },
+  { _id: <span class="s">"gaming"</span>,     nombre: <span class="s">"Gaming"</span>,         padre: <span class="s">"laptops"</span> }
+])
+
+<span class="fn">db</span>.categorias.aggregate([
+  { <span class="op">$match</span>: { _id: <span class="s">"gaming"</span> } },
+
+  {
+    <span class="op">$graphLookup</span>: {
+      from:             <span class="s">"categorias"</span>,
+      startWith:        <span class="s">"$padre"</span>,
+      connectFromField: <span class="s">"padre"</span>,
+      connectToField:   <span class="s">"_id"</span>,
+      as:               <span class="s">"ancestros"</span>,
+      maxDepth:         <span class="n">5</span>,
+      depthField:       <span class="s">"nivel"</span>
+    }
+  }
+])</pre>
+    </div>
+  </div>
+
+  <div class="card c-purple">
+    <div class="card-title">🏃 Comandos de administración útiles</div>
+    <div class="cb-wrap">
+      <div class="cb-header"><span class="cb-lang">mongo shell</span><button class="cb-copy" onclick="cp(this)">COPIAR</button></div>
+      <pre><span class="cm">// Stats de la colección</span>
+<span class="fn">db</span>.productos.stats()
+
+<span class="cm">// Stats de la db</span>
+<span class="fn">db</span>.stats()
+
+<span class="cm">// Ver operaciones en curso</span>
+<span class="fn">db</span>.currentOp()
+
+<span class="cm">// Renombrar una colección</span>
+<span class="fn">db</span>.productos.renameCollection(<span class="s">"inventario"</span>)
+
+<span class="cm">// Copiar colección (con aggregate $out)</span>
+<span class="fn">db</span>.productos.aggregate([
+  { <span class="op">$match</span>: {} },
+  { <span class="op">$out</span>: <span class="s">"productos_backup"</span> }
+])
+
+<span class="cm">// Validar integridad de la colección</span>
+<span class="fn">db</span>.runCommand({ validate: <span class="s">"productos"</span> })
+
+<span class="cm">// Ver versión de MongoDB</span>
+<span class="fn">db</span>.version()
+
+<span class="cm">// Información del servidor</span>
+<span class="fn">db</span>.serverStatus()</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ 12 REFERENCIA ════════════════════ -->
+<div id="sec-ref" class="sec">
+  <div class="sec-label">12 — Referencia Rápida</div>
+  <h2 class="sec-title">Cheatsheet completo</h2>
+
+  <div class="g2">
+    <div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <tr><th colspan="2">SQL → MongoDB</th></tr>
+          <tr><td>SELECT campos</td><td>$project / proyección</td></tr>
+          <tr><td>WHERE</td><td>$match / find(filtro)</td></tr>
+          <tr><td>GROUP BY</td><td>$group</td></tr>
+          <tr><td>HAVING</td><td>$match después de $group</td></tr>
+          <tr><td>ORDER BY</td><td>$sort / .sort()</td></tr>
+          <tr><td>LIMIT N</td><td>$limit / .limit(N)</td></tr>
+          <tr><td>OFFSET N</td><td>$skip / .skip(N)</td></tr>
+          <tr><td>JOIN</td><td>$lookup</td></tr>
+          <tr><td>COUNT(*)</td><td>$count / { $sum: 1 }</td></tr>
+          <tr><td>SUM(campo)</td><td>{ $sum: "$campo" }</td></tr>
+          <tr><td>AVG(campo)</td><td>{ $avg: "$campo" }</td></tr>
+          <tr><td>DISTINCT</td><td>distinct() / $addToSet</td></tr>
+          <tr><td>INSERT</td><td>insertOne / insertMany</td></tr>
+          <tr><td>UPDATE</td><td>updateOne / updateMany</td></tr>
+          <tr><td>DELETE</td><td>deleteOne / deleteMany</td></tr>
+          <tr><td>CREATE TABLE</td><td>createCollection</td></tr>
+          <tr><td>DROP TABLE</td><td>.drop()</td></tr>
+          <tr><td>CREATE INDEX</td><td>createIndex</td></tr>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <tr><th colspan="2">Operadores clave</th></tr>
+          <tr><td>$gt / $gte</td><td>&gt; / &gt;=</td></tr>
+          <tr><td>$lt / $lte</td><td>&lt; / &lt;=</td></tr>
+          <tr><td>$eq / $ne</td><td>= / !=</td></tr>
+          <tr><td>$in / $nin</td><td>IN / NOT IN</td></tr>
+          <tr><td>$and / $or</td><td>AND / OR</td></tr>
+          <tr><td>$not / $nor</td><td>NOT / NOR</td></tr>
+          <tr><td>$exists</td><td>campo existe</td></tr>
+          <tr><td>$type</td><td>tipo BSON</td></tr>
+          <tr><td>$regex</td><td>expresión regular</td></tr>
+          <tr><td>$set</td><td>asignar valor</td></tr>
+          <tr><td>$unset</td><td>eliminar campo</td></tr>
+          <tr><td>$inc</td><td>incrementar</td></tr>
+          <tr><td>$mul</td><td>multiplicar</td></tr>
+          <tr><td>$push</td><td>añadir al array</td></tr>
+          <tr><td>$pull</td><td>eliminar del array</td></tr>
+          <tr><td>$addToSet</td><td>push sin duplicar</td></tr>
+          <tr><td>$all</td><td>contiene todos</td></tr>
+          <tr><td>$elemMatch</td><td>elemento cumple cond</td></tr>
+          <tr><td>$size</td><td>tamaño del array</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <tr><th>Tipo BSON</th><th>Descripción</th><th>Ejemplo</th></tr>
+      <tr><td>string</td><td>Texto</td><td>"hola"</td></tr>
+      <tr><td>int</td><td>Entero 32 bits</td><td>NumberInt(42)</td></tr>
+      <tr><td>long</td><td>Entero 64 bits</td><td>NumberLong(9999999)</td></tr>
+      <tr><td>double</td><td>Decimal 64 bits</td><td>3.14</td></tr>
+      <tr><td>decimal</td><td>Decimal de alta precisión</td><td>NumberDecimal("1.99")</td></tr>
+      <tr><td>bool</td><td>Booleano</td><td>true / false</td></tr>
+      <tr><td>date</td><td>Fecha/hora</td><td>new Date() / ISODate()</td></tr>
+      <tr><td>objectId</td><td>ID único de 12 bytes</td><td>ObjectId("...")</td></tr>
+      <tr><td>array</td><td>Lista ordenada</td><td>[1, "a", true]</td></tr>
+      <tr><td>object</td><td>Documento anidado</td><td>{ campo: valor }</td></tr>
+      <tr><td>null</td><td>Valor nulo</td><td>null</td></tr>
+      <tr><td>binData</td><td>Datos binarios</td><td>BinData(0,"...")</td></tr>
+      <tr><td>regex</td><td>Expresión regular</td><td>/patrón/flags</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════ 13 QUIZ ════════════════════ -->
+<div id="sec-quiz" class="sec">
+  <div class="sec-label">13 — Autoevaluación</div>
+  <h2 class="sec-title">Quiz de práctica</h2>
+  <p class="sec-desc">15 preguntas para verificar que sabes todo. Haz clic en la respuesta.</p>
+  <div id="qbox"></div>
+  <div id="qres" style="display:none" class="card c-cyan">
+    <div class="card-title">🎯 Resultado final</div>
+    <div id="qscore" style="font-size:28px;font-weight:700;margin:10px 0"></div>
+    <div id="qmsg" style="color:var(--dim);margin-bottom:16px"></div>
+    <button onclick="startQuiz()" style="background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.3);color:var(--green);padding:10px 22px;border-radius:6px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px">REPETIR QUIZ</button>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── NAV ──────────────────────────────────────────
+function go(id, btn) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+  document.getElementById('sec-' + id).classList.add('on');
+  btn.classList.add('on');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── COPY ─────────────────────────────────────────
+function cp(btn) {
+  const pre = btn.closest('.cb-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = '✓ COPIADO';
+    btn.classList.add('done');
+    setTimeout(() => { btn.textContent = 'COPIAR'; btn.classList.remove('done'); }, 2000);
+  });
+}
+
+// ── QUIZ ─────────────────────────────────────────
+const QS = [
+  { q: "¿Qué método inserta múltiples documentos a la vez?",
+    o: ["insertOne()", "insertMany()", "insertAll()", "insert()"], a: 1 },
+  { q: "¿Cómo filtras documentos donde precio > 100?",
+    o: ["find({ precio: >100 })", "find({ precio: { $gt: 100 } })", "find({ precio: { $gte: 100 } })", "find({ precio: 'gt:100' })"], a: 1 },
+  { q: "¿Qué stage del pipeline equivale a SQL WHERE?",
+    o: ["$filter", "$where", "$match", "$select"], a: 2 },
+  { q: "¿Qué operador incrementa un campo numérico?",
+    o: ["$set", "$add", "$inc", "$plus"], a: 2 },
+  { q: "¿Qué hace $unwind?",
+    o: ["Ordena arrays", "Une colecciones", "Convierte cada elem del array en documento separado", "Filtra arrays"], a: 2 },
+  { q: "¿Cuál es el equivalente de SQL JOIN en MongoDB?",
+    o: ["$join", "$lookup", "$merge", "$connect"], a: 1 },
+  { q: "¿Cómo eliminas un campo con update?",
+    o: ["$delete", "$remove", "$unset", "$drop"], a: 2 },
+  { q: "En $group, ¿qué acumulador crea un array con todos los valores (permite repetidos)?",
+    o: ["$collect", "$push", "$addToSet", "$gather"], a: 1 },
+  { q: "¿Qué operador agrega a un array SIN duplicar?",
+    o: ["$push", "$addToSet", "$append", "$merge"], a: 1 },
+  { q: "¿Cuál de estas queries usa el operador $all correctamente?",
+    o: ["find({ tags: $all(['a','b'] })", "find({ tags: { $all: ['a','b'] } })", "find({ tags: ['a','b'] })", "find({ $all: { tags: ['a','b'] } })"], a: 1 },
+  { q: "¿Qué hace el parámetro upsert: true en updateOne?",
+    o: ["Actualiza todos los docs", "Crea el doc si no existe, actualiza si sí", "Elimina y vuelve a insertar", "Solo actualiza si existe"], a: 1 },
+  { q: "¿Qué stage usas para guardar el resultado del pipeline en otra colección?",
+    o: ["$save", "$out", "$store", "$write"], a: 1 },
+  { q: "En $project, ¿cómo accedes a una variable de entorno del pipeline?",
+    o: ["$variable", "$$variable", "@variable", "#variable"], a: 1 },
+  { q: "¿Qué tipo de índice elimina documentos automáticamente después de X segundos?",
+    o: ["Sparse", "Unique", "TTL", "Text"], a: 2 },
+  { q: "¿Qué hace $facet en un pipeline?",
+    o: ["Filtra con múltiples condiciones", "Ejecuta varios sub-pipelines paralelos sobre los mismos datos", "Une múltiples colecciones", "Crea múltiples índices"], a: 1 }
+];
+
+let answered, score;
+
+function startQuiz() {
+  answered = new Array(QS.length).fill(false);
+  score = 0;
+  document.getElementById('qres').style.display = 'none';
+  document.getElementById('qbox').innerHTML = QS.map((q, qi) => `
+    <div class="qcard" id="qc${qi}">
+      <div class="qtxt"><span class="qnum">${qi+1}/${QS.length}</span>${q.q}</div>
+      ${q.o.map((opt, oi) => `
+        <div class="qopt" onclick="ans(${qi},${oi},this)">${opt}</div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function ans(qi, oi, el) {
+  if (answered[qi]) return;
+  answered[qi] = true;
+  const q = QS[qi];
+  const opts = document.querySelectorAll(`#qc${qi} .qopt`);
+  if (oi === q.a) { el.classList.add('ok'); score++; }
+  else { el.classList.add('bad'); opts[q.a].classList.add('ok'); }
+  opts.forEach(o => o.classList.add('locked'));
+  if (answered.every(Boolean)) showRes();
+}
+
+function showRes() {
+  const pct = Math.round(score / QS.length * 100);
+  const r = document.getElementById('qres');
+  r.style.display = 'block';
+  document.getElementById('qscore').innerHTML =
+    `<span style="color:var(--green)">${score}</span><span style="color:var(--dim)"> / ${QS.length}</span> — <span style="color:var(--yellow)">${pct}%</span>`;
+  const msgs = [
+    [90, '🏆 Crack total. Mañana lo bordas.'],
+    [70, '💪 Muy bien. Repasa los que fallaste.'],
+    [50, '📚 Vas bien. Lee de nuevo lo que falló.'],
+    [0,  '😅 Vuelve a empezar desde la sección 01.']
+  ];
+  document.getElementById('qmsg').textContent = msgs.find(([t]) => pct >= t)[1];
+  r.scrollIntoView({ behavior: 'smooth' });
+}
+
+startQuiz();
+</script>
+</body>
+</html>
